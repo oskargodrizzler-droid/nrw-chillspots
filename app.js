@@ -91,6 +91,10 @@ function initMap() {
 
 function setupButtons() {
 
+  // =========================
+  // HAUPT-BUTTONS
+  // =========================
+
   const spotButton =
     document.getElementById("spotButton");
 
@@ -99,6 +103,7 @@ function setupButtons() {
 
   const adminButton =
     document.getElementById("adminButton");
+
 
   if (spotButton) {
     spotButton.onclick = openSpotModal;
@@ -112,17 +117,73 @@ function setupButtons() {
     adminButton.onclick = openAdminPanel;
   }
 
+
+  // =========================
+  // SPOT MODAL SCHLIESSEN
+  // =========================
+
+  const closeSpotBtn =
+    document.getElementById("closeSpotBtn");
+
+  const cancelSpotBtn =
+    document.getElementById("cancelSpotBtn");
+
+  if (closeSpotBtn) {
+    closeSpotBtn.onclick = closeSpotModal;
+  }
+
+  if (cancelSpotBtn) {
+    cancelSpotBtn.onclick = closeSpotModal;
+  }
+
+
+  // =========================
+  // ACCOUNT MODAL SCHLIESSEN
+  // =========================
+
+  const closeAccountBtn =
+    document.getElementById("closeAccountBtn");
+
+  if (closeAccountBtn) {
+    closeAccountBtn.onclick = closeAuthModal;
+  }
+
+
+  // =========================
+  // ADMIN MODAL SCHLIESSEN
+  // =========================
+
+  const closeAdminBtn =
+    document.getElementById("closeAdminBtn");
+
+  if (closeAdminBtn) {
+
+    closeAdminBtn.onclick = () => {
+
+      document
+        .getElementById("adminModal")
+        ?.classList.remove("show");
+
+    };
+  }
+
+
+  // =========================
+  // SUCHE
+  // =========================
+
   const search =
     document.getElementById("search");
 
   if (search) {
+
     search.addEventListener(
       "input",
       renderSpots
     );
+
   }
 }
-
 
 // ===============================
 // STATUS
