@@ -91,10 +91,14 @@ function initMap() {
 
 function setupButtons() {
 
-  const spotButton = document.getElementById("spotButton");
-  const accountButton = document.getElementById("accountButton");
-  const closeSpot = document.getElementById("closeSpot");
-  const closeAuth = document.getElementById("closeAuth");
+  const spotButton =
+    document.getElementById("spotButton");
+
+  const accountButton =
+    document.getElementById("accountButton");
+
+  const adminButton =
+    document.getElementById("adminButton");
 
   if (spotButton) {
     spotButton.onclick = openSpotModal;
@@ -104,18 +108,18 @@ function setupButtons() {
     accountButton.onclick = openAuthModal;
   }
 
-  if (closeSpot) {
-    closeSpot.onclick = closeSpotModal;
+  if (adminButton) {
+    adminButton.onclick = openAdminPanel;
   }
 
-  if (closeAuth) {
-    closeAuth.onclick = closeAuthModal;
-  }
-
-  const search = document.getElementById("search");
+  const search =
+    document.getElementById("search");
 
   if (search) {
-    search.addEventListener("input", renderSpots);
+    search.addEventListener(
+      "input",
+      renderSpots
+    );
   }
 }
 
