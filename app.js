@@ -1,22 +1,22 @@
-const SUPABASE_URL = "https://ayukjqhmmgqbgtiusvsx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
+const SUPABASE_URL =
+  "https://ayukjqhmmgqbgtiusvsx.supabase.co";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const SUPABASE_KEY =
+  "sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
 
-// ===============================
-// STATE
-// ===============================
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-let map;
+let map = null;
 let selectedLat = null;
 let selectedLng = null;
 let selectedMarker = null;
 
-let spots = [];
 let markers = [];
+let spots = [];
 
 let currentUser = null;
 let currentProfile = null;
@@ -26,12 +26,18 @@ let currentProfile = null;
 // START
 // ===============================
 
-document.addEventListener("DOMContentLoaded", async () => {
-  initMap();
-  setupButtons();
-  await loadUser();
-  await loadSpots();
-});
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+
+    initMap();
+    setupButtons();
+
+    await loadUser();
+    await loadSpots();
+
+  }
+);
 
 
 // ===============================
@@ -40,48 +46,82 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function initMap() {
 
-  const mapElement = document.getElementById("map");
+  const mapElement =
+    document.getElementById("map");
 
-  if (!mapElement) {
-    console.error("Map element fehlt");
-    return;
-  }
+  if (!mapElement) return;
 
-  map = L.map("map").setView(
-    [51.48, 7.22],
-    10
-  );
+  map =
+    L.map("map").setView(
+      [51.48, 7.22],
+      10
+    );
 
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
-      attribution: "&copy; OpenStreetMap contributors"
+      attribution:
+        "&copy; OpenStreetMap contributors",
+      maxZoom: 19
     }
   ).addTo(map);
 
-  map.on("click", (e) => {
 
-    selectedLat = e.latlng.lat;
-    selectedLng = e.latlng.lng;
+  map.on("click", (event) => {
 
-    if (selectedMarker) {
-      map.removeLayer(selectedMarker);
-    }
+    selectedLat =
+      event.latlng.lat;
 
-    selectedMarker = L.marker([
+    selectedLng =
+      event.latlng.lng;
+
+    setSelectedMarker(
       selectedLat,
       selectedLng
-    ]).addTo(map);
-
-    const location = document.getElementById(
-      "selectedLocation"
     );
 
+    const location =
+      document.getElementById(
+        "selectedLocation"
+      );
+
     if (location) {
+
       location.textContent =
         `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+
     }
+
   });
+
+}
+
+
+// ===============================
+// MARKER
+// ===============================
+
+function setSelectedMarker(
+  lat,
+  lng
+) {
+
+  if (!map) return;
+
+  if (selectedMarker) {
+
+    map.removeLayer(
+      selectedMarker
+    );
+
+  }
+
+  selectedMarker =
+    L.marker([
+      lat,
+      lng
+    ]).addTo(map);
+
 }
 
 
@@ -91,89 +131,72 @@ function initMap() {
 
 function setupButtons() {
 
-  // =========================
-  // HAUPT-BUTTONS
-  // =========================
+  const buttons = {
 
-  const spotButton =
-    document.getElementById("spotButton");
+    spotButton:
+      openSpotModal,
 
-  const accountButton =
-    document.getElementById("accountButton");
+    accountButton:
+      openAuthModal,
 
-  const adminButton =
-    document.getElementById("adminButton");
+    adminButton:
+      openAdminPanel,
 
+    closeSpotBtn:
+      closeSpotModal,
 
-  if (spotButton) {
-    spotButton.onclick = openSpotModal;
-  }
+    cancelSpotBtn:
+      closeSpotModal,
 
-  if (accountButton) {
-    accountButton.onclick = openAuthModal;
-  }
+    closeAccountBtn:
+      closeAuthModal,
 
-  if (adminButton) {
-    adminButton.onclick = openAdminPanel;
-  }
+    closeAdminBtn:
+      closeAdminPanel,
 
+    myLocationBtn:
+      useMyLocation,
 
-  // =========================
-  // SPOT MODAL SCHLIESSEN
-  // =========================
+    publishSpotBtn:
+      createSpot,
 
-  const closeSpotBtn =
-    document.getElementById("closeSpotBtn");
+    loginBtn:
+      signIn,
 
-  const cancelSpotBtn =
-    document.getElementById("cancelSpotBtn");
+    registerBtn:
+      signUp,
 
-  if (closeSpotBtn) {
-    closeSpotBtn.onclick = closeSpotModal;
-  }
+    logoutBtn:
+      logout,
 
-  if (cancelSpotBtn) {
-    cancelSpotBtn.onclick = closeSpotModal;
-  }
+    saveNicknameBtn:
+      saveNickname
+
+  };
 
 
-  // =========================
-  // ACCOUNT MODAL SCHLIESSEN
-  // =========================
+  Object.entries(buttons)
+    .forEach(
+      ([id, functionToRun]) => {
 
-  const closeAccountBtn =
-    document.getElementById("closeAccountBtn");
+        const button =
+          document.getElementById(id);
 
-  if (closeAccountBtn) {
-    closeAccountBtn.onclick = closeAuthModal;
-  }
+        if (!button) return;
 
+        button.addEventListener(
+          "click",
+          functionToRun
+        );
 
-  // =========================
-  // ADMIN MODAL SCHLIESSEN
-  // =========================
+      }
+    );
 
-  const closeAdminBtn =
-    document.getElementById("closeAdminBtn");
-
-  if (closeAdminBtn) {
-
-    closeAdminBtn.onclick = () => {
-
-      document
-        .getElementById("adminModal")
-        ?.classList.remove("show");
-
-    };
-  }
-
-
-  // =========================
-  // SUCHE
-  // =========================
 
   const search =
-    document.getElementById("search");
+    document.getElementById(
+      "search"
+    );
 
   if (search) {
 
@@ -183,34 +206,71 @@ function setupButtons() {
     );
 
   }
+
+
+  // Klick außerhalb des Fensters
+  document
+    .querySelectorAll(".modal")
+    .forEach((modal) => {
+
+      modal.addEventListener(
+        "click",
+        (event) => {
+
+          if (
+            event.target === modal
+          ) {
+
+            modal.classList.remove(
+              "show"
+            );
+
+          }
+
+        }
+      );
+
+    });
+
 }
+
 
 // ===============================
 // STATUS
 // ===============================
 
-function showStatus(message) {
+function showStatus(
+  message
+) {
 
-  let status = document.getElementById("status");
+  const status =
+    document.getElementById(
+      "status"
+    );
 
-  if (!status) {
+  if (!status) return;
 
-    status = document.createElement("div");
+  status.textContent =
+    message;
 
-    status.id = "status";
-    status.className = "status";
+  status.style.display =
+    "block";
 
-    document.body.appendChild(status);
-  }
+  clearTimeout(
+    window.statusTimer
+  );
 
-  status.textContent = message;
-  status.style.display = "block";
+  window.statusTimer =
+    setTimeout(
+      () => {
 
-  clearTimeout(window.statusTimer);
+        status.style.display =
+          "none";
 
-  window.statusTimer = setTimeout(() => {
-    status.style.display = "none";
-  }, 3000);
+      },
+      3500
+    );
+
 }
 
 
@@ -223,7 +283,7 @@ function openSpotModal() {
   if (!currentUser) {
 
     showStatus(
-      "❌ Du musst zuerst einen Account erstellen"
+      "❌ Bitte zuerst einloggen"
     );
 
     openAuthModal();
@@ -232,36 +292,84 @@ function openSpotModal() {
   }
 
   document
-    .getElementById("spotModal")
+    .getElementById(
+      "spotModal"
+    )
     ?.classList.add("show");
+
 }
+
 
 function closeSpotModal() {
 
   document
-    .getElementById("spotModal")
+    .getElementById(
+      "spotModal"
+    )
     ?.classList.remove("show");
+
 }
+
 
 function openAuthModal() {
 
   document
-    .getElementById("authModal")
+    .getElementById(
+      "authModal"
+    )
     ?.classList.add("show");
 
   updateAccountUI();
+
 }
+
 
 function closeAuthModal() {
 
   document
-    .getElementById("authModal")
+    .getElementById(
+      "authModal"
+    )
     ?.classList.remove("show");
+
+}
+
+
+function openAdminPanel() {
+
+  if (!isAdmin()) {
+
+    showStatus(
+      "❌ Keine Admin-Berechtigung"
+    );
+
+    return;
+  }
+
+  document
+    .getElementById(
+      "adminModal"
+    )
+    ?.classList.add("show");
+
+  renderAdminPanel();
+
+}
+
+
+function closeAdminPanel() {
+
+  document
+    .getElementById(
+      "adminModal"
+    )
+    ?.classList.remove("show");
+
 }
 
 
 // ===============================
-// ACCOUNT LADEN
+// USER LADEN
 // ===============================
 
 async function loadUser() {
@@ -269,20 +377,38 @@ async function loadUser() {
   const {
     data,
     error
-  } = await supabaseClient.auth.getUser();
+  } =
+    await supabaseClient
+      .auth
+      .getUser();
 
-  if (error) {
+
+  if (
+    error &&
+    error.name !==
+      "AuthSessionMissingError"
+  ) {
+
     console.error(error);
-    return;
+
   }
 
-  currentUser = data.user || null;
+
+  currentUser =
+    data?.user || null;
+
 
   if (currentUser) {
+
+    await ensureProfile();
+
     await loadProfile();
+
   }
 
+
   updateAccountUI();
+
 }
 
 
@@ -290,25 +416,78 @@ async function loadUser() {
 // PROFIL
 // ===============================
 
+async function ensureProfile() {
+
+  if (!currentUser) return;
+
+
+  const {
+    data
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq(
+        "id",
+        currentUser.id
+      )
+      .maybeSingle();
+
+
+  if (!data) {
+
+    await supabaseClient
+      .from("profiles")
+      .insert({
+
+        id:
+          currentUser.id,
+
+        nickname:
+          null
+
+      });
+
+  }
+
+}
+
+
 async function loadProfile() {
 
   if (!currentUser) return;
 
+
   const {
     data,
     error
-  } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "id,nickname,is_admin,role"
+      )
+      .eq(
+        "id",
+        currentUser.id
+      )
+      .maybeSingle();
+
 
   if (error) {
-    console.error("Profil:", error);
+
+    console.error(
+      "Profil:",
+      error
+    );
+
     return;
   }
 
-  currentProfile = data;
+
+  currentProfile =
+    data || null;
+
 }
 
 
@@ -319,52 +498,105 @@ async function loadProfile() {
 function updateAccountUI() {
 
   const info =
-    document.getElementById("accountInfo");
+    document.getElementById(
+      "accountInfo"
+    );
 
-  const logoutButton =
-    document.getElementById("logoutButton");
+  const loggedOut =
+    document.getElementById(
+      "loggedOutArea"
+    );
+
+  const loggedIn =
+    document.getElementById(
+      "loggedInArea"
+    );
+
+  const email =
+    document.getElementById(
+      "loggedInEmail"
+    );
 
   const adminButton =
-    document.getElementById("adminButton");
+    document.getElementById(
+      "adminButton"
+    );
+
+  const nickname =
+    document.getElementById(
+      "nicknameInput"
+    );
+
 
   if (!currentUser) {
 
-    if (info) {
-      info.textContent = "Nicht eingeloggt";
-    }
+    if (info)
+      info.textContent =
+        "Nicht eingeloggt";
 
-    if (logoutButton) {
-      logoutButton.style.display = "none";
-    }
+    if (loggedOut)
+      loggedOut.style.display =
+        "block";
 
-    if (adminButton) {
-      adminButton.style.display = "none";
-    }
+    if (loggedIn)
+      loggedIn.style.display =
+        "none";
+
+    if (adminButton)
+      adminButton.style.display =
+        "none";
 
     return;
   }
 
+
   if (info) {
 
     info.textContent =
-      `👤 ${currentUser.email}`;
+      `👤 ${
+        currentProfile?.nickname ||
+        "Nickname fehlt"
+      }`;
+
   }
 
-  if (logoutButton) {
-    logoutButton.style.display = "block";
+
+  if (email) {
+
+    email.textContent =
+      `E-Mail: ${currentUser.email}`;
+
   }
 
-  if (
-    adminButton &&
-    isAdmin()
-  ) {
 
-    adminButton.style.display = "block";
+  if (loggedOut)
+    loggedOut.style.display =
+      "none";
 
-  } else if (adminButton) {
 
-    adminButton.style.display = "none";
+  if (loggedIn)
+    loggedIn.style.display =
+      "block";
+
+
+  if (nickname) {
+
+    nickname.value =
+      currentProfile?.nickname ||
+      "";
+
   }
+
+
+  if (adminButton) {
+
+    adminButton.style.display =
+      isAdmin()
+        ? "inline-block"
+        : "none";
+
+  }
+
 }
 
 
@@ -374,14 +606,13 @@ function updateAccountUI() {
 
 function isAdmin() {
 
-  if (!currentProfile) {
-    return false;
-  }
-
   return (
-    currentProfile.is_admin === true ||
-    currentProfile.role === "admin"
+    currentProfile?.is_admin ===
+      true ||
+    currentProfile?.role ===
+      "admin"
   );
+
 }
 
 
@@ -392,10 +623,16 @@ function isAdmin() {
 async function signUp() {
 
   const email =
-    document.getElementById("email")?.value.trim();
+    document
+      .getElementById("email")
+      ?.value
+      .trim();
 
   const password =
-    document.getElementById("password")?.value;
+    document
+      .getElementById("password")
+      ?.value;
+
 
   if (!email || !password) {
 
@@ -405,6 +642,7 @@ async function signUp() {
 
     return;
   }
+
 
   if (password.length < 6) {
 
@@ -415,15 +653,23 @@ async function signUp() {
     return;
   }
 
-  showStatus("⏳ Account wird erstellt...");
+
+  showStatus(
+    "⏳ Account wird erstellt..."
+  );
+
 
   const {
     data,
     error
-  } = await supabaseClient.auth.signUp({
-    email,
-    password
-  });
+  } =
+    await supabaseClient.auth.signUp({
+
+      email,
+      password
+
+    });
+
 
   if (error) {
 
@@ -434,31 +680,53 @@ async function signUp() {
     return;
   }
 
-  currentUser = data.user;
 
-  if (currentUser) {
+  if (
+    data.user &&
+    data.session
+  ) {
+
+    currentUser =
+      data.user;
+
+    await ensureProfile();
+
     await loadProfile();
+
+    updateAccountUI();
+
+    showStatus(
+      "✅ Account erstellt!"
+    );
+
+    return;
   }
 
-  updateAccountUI();
 
   showStatus(
-    "✅ Account erstellt"
+    "✅ Account erstellt! Prüfe deine E-Mail zur Bestätigung."
   );
+
 }
 
 
 // ===============================
-// EINLOGGEN
+// LOGIN
 // ===============================
 
 async function signIn() {
 
   const email =
-    document.getElementById("email")?.value.trim();
+    document
+      .getElementById("email")
+      ?.value
+      .trim();
 
   const password =
-    document.getElementById("password")?.value;
+    document
+      .getElementById("password")
+      ?.value;
+
 
   if (!email || !password) {
 
@@ -469,16 +737,25 @@ async function signIn() {
     return;
   }
 
-  showStatus("⏳ Einloggen...");
+
+  showStatus(
+    "⏳ Einloggen..."
+  );
+
 
   const {
     data,
     error
   } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+    await supabaseClient
+      .auth
+      .signInWithPassword({
+
+        email,
+        password
+
+      });
+
 
   if (error) {
 
@@ -489,7 +766,12 @@ async function signIn() {
     return;
   }
 
-  currentUser = data.user;
+
+  currentUser =
+    data.user;
+
+
+  await ensureProfile();
 
   await loadProfile();
 
@@ -497,12 +779,15 @@ async function signIn() {
 
   closeAuthModal();
 
-  showStatus("✅ Eingeloggt");
+  showStatus(
+    "✅ Eingeloggt!"
+  );
+
 }
 
 
 // ===============================
-// AUSLOGGEN
+// LOGOUT
 // ===============================
 
 async function logout() {
@@ -510,7 +795,10 @@ async function logout() {
   const {
     error
   } =
-    await supabaseClient.auth.signOut();
+    await supabaseClient
+      .auth
+      .signOut();
+
 
   if (error) {
 
@@ -521,12 +809,19 @@ async function logout() {
     return;
   }
 
-  currentUser = null;
-  currentProfile = null;
+
+  currentUser =
+    null;
+
+  currentProfile =
+    null;
 
   updateAccountUI();
 
-  showStatus("👋 Ausgeloggt");
+  showStatus(
+    "👋 Ausgeloggt"
+  );
+
 }
 
 
@@ -535,29 +830,189 @@ async function logout() {
 // ===============================
 
 supabaseClient.auth.onAuthStateChange(
-  async (_event, session) => {
+  async (
+    event,
+    session
+  ) => {
 
     currentUser =
       session?.user || null;
 
+
     if (currentUser) {
+
+      await ensureProfile();
+
       await loadProfile();
+
     } else {
-      currentProfile = null;
+
+      currentProfile =
+        null;
+
     }
 
+
     updateAccountUI();
+
   }
 );
 
 
 // ===============================
-// MEIN STANDORT
+// NICKNAME
+// ===============================
+
+async function saveNickname() {
+
+  if (!currentUser) {
+
+    showStatus(
+      "❌ Bitte zuerst einloggen"
+    );
+
+    return;
+  }
+
+
+  const input =
+    document.getElementById(
+      "nicknameInput"
+    );
+
+  const nickname =
+    input?.value
+      .trim();
+
+
+  if (
+    nickname.length < 2 ||
+    nickname.length > 24
+  ) {
+
+    showStatus(
+      "❌ Nickname muss 2–24 Zeichen haben"
+    );
+
+    return;
+  }
+
+
+  if (
+    !/^[A-Za-z0-9ÄÖÜäöüß_ -]+$/
+      .test(nickname)
+  ) {
+
+    showStatus(
+      "❌ Nickname enthält ungültige Zeichen"
+    );
+
+    return;
+  }
+
+
+  // Prüfen, ob Nickname schon benutzt wird
+
+  const {
+    data: existing,
+    error: checkError
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select("id")
+      .ilike(
+        "nickname",
+        nickname
+      )
+      .neq(
+        "id",
+        currentUser.id
+      )
+      .limit(1);
+
+
+  if (checkError) {
+
+    showStatus(
+      "❌ " +
+      checkError.message
+    );
+
+    return;
+  }
+
+
+  if (
+    existing &&
+    existing.length > 0
+  ) {
+
+    showStatus(
+      "❌ Dieser Nickname ist bereits vergeben"
+    );
+
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+
+        id:
+          currentUser.id,
+
+        nickname
+
+      });
+
+
+  if (error) {
+
+    showStatus(
+      "❌ " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  currentProfile = {
+
+    ...currentProfile,
+
+    id:
+      currentUser.id,
+
+    nickname
+
+  };
+
+
+  updateAccountUI();
+
+  await loadSpots();
+
+  showStatus(
+    "✅ Nickname gespeichert!"
+  );
+
+}
+
+
+// ===============================
+// STANDORT
 // ===============================
 
 function useMyLocation() {
 
-  if (!navigator.geolocation) {
+  if (
+    !navigator.geolocation
+  ) {
 
     showStatus(
       "❌ Standort wird nicht unterstützt"
@@ -566,11 +1021,14 @@ function useMyLocation() {
     return;
   }
 
+
   showStatus(
     "📍 Standort wird gesucht..."
   );
 
+
   navigator.geolocation.getCurrentPosition(
+
     (position) => {
 
       selectedLat =
@@ -579,46 +1037,65 @@ function useMyLocation() {
       selectedLng =
         position.coords.longitude;
 
+
+      setSelectedMarker(
+        selectedLat,
+        selectedLng
+      );
+
+
       if (map) {
 
         map.setView(
-          [selectedLat, selectedLng],
+          [
+            selectedLat,
+            selectedLng
+          ],
           15
         );
+
       }
 
-      if (selectedMarker) {
-        map.removeLayer(selectedMarker);
-      }
-
-      selectedMarker =
-        L.marker([
-          selectedLat,
-          selectedLng
-        ]).addTo(map);
 
       const location =
         document.getElementById(
           "selectedLocation"
         );
 
+
       if (location) {
+
         location.textContent =
           "📍 Dein Standort";
+
       }
+
 
       showStatus(
         "✅ Standort ausgewählt"
       );
+
     },
+
 
     () => {
 
       showStatus(
-        "❌ Standort konnte nicht abgerufen werden"
+        "❌ Standortzugriff wurde verweigert"
       );
+
+    },
+
+    {
+      enableHighAccuracy:
+        true,
+
+      timeout:
+        10000
     }
+
   );
+
 }
 
 
@@ -637,35 +1114,50 @@ async function createSpot() {
     return;
   }
 
+
   const name =
     document
-      .getElementById("spotName")
-      ?.value.trim();
+      .getElementById(
+        "spotName"
+      )
+      ?.value
+      .trim();
+
 
   const description =
     document
-      .getElementById("spotDescription")
-      ?.value.trim();
+      .getElementById(
+        "spotDescription"
+      )
+      ?.value
+      .trim();
+
 
   const category =
     document
-      .getElementById("spotCategory")
+      .getElementById(
+        "spotCategory"
+      )
       ?.value;
 
-  const photoInput =
-    document.getElementById("spotPhoto");
 
-  const photoFile =
-    photoInput?.files?.[0];
+  const photo =
+    document
+      .getElementById(
+        "spotPhoto"
+      )
+      ?.files?.[0];
+
 
   if (!name) {
 
     showStatus(
-      "❌ Spot-Name fehlt"
+      "❌ Name eingeben"
     );
 
     return;
   }
+
 
   if (
     selectedLat === null ||
@@ -679,140 +1171,205 @@ async function createSpot() {
     return;
   }
 
+
   showStatus(
     "⏳ Spot wird erstellt..."
   );
 
-  let photoUrl = null;
+
+  let photoUrl =
+    null;
 
 
   // FOTO
 
-  if (photoFile) {
+  if (photo) {
 
-    const extension =
-      photoFile.name
-        .split(".")
-        .pop()
-        .toLowerCase();
-
-    const fileName =
-      `${currentUser.id}/${crypto.randomUUID()}.${extension}`;
-
-    const {
-      error: uploadError
-    } =
-      await supabaseClient
-        .storage
-        .from("spot-photos")
-        .upload(
-          fileName,
-          photoFile,
-          {
-            cacheControl: "3600",
-            upsert: false
-          }
-        );
-
-    if (uploadError) {
+    if (
+      photo.size >
+      8 * 1024 * 1024
+    ) {
 
       showStatus(
-        "❌ Foto: " +
-        uploadError.message
+        "❌ Foto darf maximal 8 MB groß sein"
       );
 
       return;
     }
 
+
+    const extension =
+      photo.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+
+    const path =
+      `${currentUser.id}/${Date.now()}.${extension}`;
+
+
     const {
-      data
+      error
     } =
+      await supabaseClient
+        .storage
+        .from("spot-photos")
+        .upload(
+          path,
+          photo,
+          {
+            cacheControl:
+              "3600",
+
+            upsert:
+              false,
+
+            contentType:
+              photo.type
+          }
+        );
+
+
+    if (error) {
+
+      showStatus(
+        "❌ Foto: " +
+        error.message
+      );
+
+      return;
+    }
+
+
+    photoUrl =
       supabaseClient
         .storage
         .from("spot-photos")
-        .getPublicUrl(fileName);
+        .getPublicUrl(
+          path
+        )
+        .data
+        .publicUrl;
 
-    photoUrl =
-      data.publicUrl;
   }
 
 
   // SPOT
 
   const {
-    data: newSpot,
+    data: spot,
     error
   } =
     await supabaseClient
       .from("spots")
       .insert({
+
         name,
+
         description,
+
         category,
-        latitude: selectedLat,
-        longitude: selectedLng,
-        user_id: currentUser.id
+
+        latitude:
+          selectedLat,
+
+        longitude:
+          selectedLng,
+
+        user_id:
+          currentUser.id
+
       })
       .select()
       .single();
 
+
   if (error) {
 
     showStatus(
-      "❌ " + error.message
+      "❌ " +
+      error.message
     );
 
     return;
   }
 
 
-  // FOTO ZU SPOT
+  // FOTO DB
 
-  if (photoUrl && newSpot) {
+  if (
+    photoUrl &&
+    spot
+  ) {
 
-    const {
-      error: photoError
-    } =
-      await supabaseClient
-        .from("spot_photos")
-        .insert({
-          spot_id: newSpot.id,
-          image_url: photoUrl,
-          user_id: currentUser.id
-        });
+    await supabaseClient
+      .from("spot_photos")
+      .insert({
 
-    if (photoError) {
+        spot_id:
+          spot.id,
 
-      console.error(
-        "Foto DB:",
-        photoError
-      );
-    }
+        image_url:
+          photoUrl,
+
+        user_id:
+          currentUser.id
+
+      });
+
   }
+
+
+  closeSpotModal();
+
+  selectedLat =
+    null;
+
+  selectedLng =
+    null;
+
+
+  if (selectedMarker) {
+
+    map.removeLayer(
+      selectedMarker
+    );
+
+    selectedMarker =
+      null;
+
+  }
+
+
+  document.getElementById(
+    "spotName"
+  ).value = "";
+
+
+  document.getElementById(
+    "spotDescription"
+  ).value = "";
+
+
+  document.getElementById(
+    "spotPhoto"
+  ).value = "";
+
+
+  document.getElementById(
+    "selectedLocation"
+  ).textContent =
+    "📍 Noch kein Standort ausgewählt";
 
 
   showStatus(
     "✅ Spot veröffentlicht!"
   );
 
-  document.getElementById("spotName").value = "";
-  document.getElementById("spotDescription").value = "";
-
-  if (photoInput) {
-    photoInput.value = "";
-  }
-
-  selectedLat = null;
-  selectedLng = null;
-
-  if (selectedMarker) {
-    map.removeLayer(selectedMarker);
-    selectedMarker = null;
-  }
-
-  closeSpotModal();
 
   await loadSpots();
+
 }
 
 
@@ -832,14 +1389,15 @@ async function loadSpots() {
       .order(
         "created_at",
         {
-          ascending: false
+          ascending:
+            false
         }
       );
+
 
   if (error) {
 
     console.error(
-      "Spots:",
       error
     );
 
@@ -850,301 +1408,437 @@ async function loadSpots() {
     return;
   }
 
-  spots = data || [];
+
+  spots =
+    data || [];
+
+
+  renderMarkers();
 
   await renderSpots();
-  renderMarkers();
+
 }
 
 
 // ===============================
-// MARKER
+// MARKER RENDERN
 // ===============================
 
 function renderMarkers() {
 
-  markers.forEach(marker => {
+  markers.forEach(
+    marker => {
 
-    if (map) {
-      map.removeLayer(marker);
+      map.removeLayer(
+        marker
+      );
+
     }
-  });
+  );
+
 
   markers = [];
 
-  spots.forEach(spot => {
 
-    if (
-      spot.latitude === null ||
-      spot.longitude === null
-    ) {
-      return;
+  spots.forEach(
+    spot => {
+
+      if (
+        spot.latitude === null ||
+        spot.longitude === null
+      ) return;
+
+
+      const marker =
+        L.marker([
+
+          Number(
+            spot.latitude
+          ),
+
+          Number(
+            spot.longitude
+          )
+
+        ]).addTo(map);
+
+
+      marker.bindPopup(`
+
+        <strong>
+          ${escapeHtml(
+            spot.name
+          )}
+        </strong>
+
+        <br>
+
+        ${escapeHtml(
+          spot.category ||
+          ""
+        )}
+
+      `);
+
+
+      markers.push(
+        marker
+      );
+
     }
+  );
 
-    const marker =
-      L.marker([
-        Number(spot.latitude),
-        Number(spot.longitude)
-      ]).addTo(map);
-
-    marker.bindPopup(`
-      <strong>
-        📍 ${escapeHtml(spot.name)}
-      </strong>
-      <br>
-      ${escapeHtml(
-        spot.category || ""
-      )}
-    `);
-
-    markers.push(marker);
-  });
 }
 
 
 // ===============================
-// SPOTS RENDERN
+// SPOTS ANZEIGEN
 // ===============================
 
 async function renderSpots() {
 
   const container =
-    document.getElementById("spotList");
+    document.getElementById(
+      "spotList"
+    );
+
 
   if (!container) return;
 
+
   const query =
     document
-      .getElementById("search")
+      .getElementById(
+        "search"
+      )
       ?.value
       .toLowerCase()
-      .trim() || "";
+      .trim() ||
+      "";
+
 
   const filtered =
-    spots.filter(spot => {
+    spots.filter(
+      spot => {
 
-      const text =
-        `${spot.name || ""}
-         ${spot.description || ""}
-         ${spot.category || ""}`
-          .toLowerCase();
+        const text =
+          `${spot.name || ""}
+           ${spot.description || ""}
+           ${spot.category || ""}`
+            .toLowerCase();
 
-      return text.includes(query);
-    });
+
+        return text.includes(
+          query
+        );
+
+      }
+    );
 
 
   if (!filtered.length) {
 
     container.innerHTML = `
+
       <div class="empty">
-        Noch keine Spots 😭
+
+        Noch keine passenden Spots 😭
+
       </div>
+
     `;
 
     return;
   }
 
 
-  container.innerHTML = "";
+  const ids =
+    filtered.map(
+      spot => spot.id
+    );
 
 
-  for (const spot of filtered) {
+  const userIds =
+    [
+      ...new Set(
+        filtered
+          .map(
+            spot =>
+              spot.user_id
+          )
+          .filter(Boolean)
+      )
+    ];
 
-    let imageUrl = null;
 
-    const {
-      data: photos
-    } =
+  let profiles = [];
+  let photos = [];
+  let likes = [];
+
+
+  if (userIds.length) {
+
+    const result =
+      await supabaseClient
+        .from("profiles")
+        .select(
+          "id,nickname"
+        )
+        .in(
+          "id",
+          userIds
+        );
+
+    profiles =
+      result.data || [];
+
+  }
+
+
+  if (ids.length) {
+
+    const photoResult =
       await supabaseClient
         .from("spot_photos")
-        .select("image_url")
-        .eq(
-          "spot_id",
-          spot.id
+        .select(
+          "spot_id,image_url"
         )
-        .limit(1);
-
-    if (
-      photos &&
-      photos.length
-    ) {
-
-      imageUrl =
-        photos[0].image_url;
-    }
+        .in(
+          "spot_id",
+          ids
+        );
 
 
-    // LIKES
+    photos =
+      photoResult.data || [];
 
-    const {
-      count: likeCount
-    } =
+
+    const likeResult =
       await supabaseClient
         .from("likes")
         .select(
-          "*",
-          {
-            count: "exact",
-            head: true
-          }
+          "spot_id,user_id"
         )
-        .eq(
+        .in(
           "spot_id",
-          spot.id
+          ids
         );
 
 
-    let liked = false;
+    likes =
+      likeResult.data || [];
 
-    if (currentUser) {
-
-      const {
-        data: myLike
-      } =
-        await supabaseClient
-          .from("likes")
-          .select("id")
-          .eq(
-            "spot_id",
-            spot.id
-          )
-          .eq(
-            "user_id",
-            currentUser.id
-          )
-          .maybeSingle();
-
-      liked = !!myLike;
-    }
-
-
-    // ERSTELLER
-
-    let creatorText =
-      "Unbekannter Nutzer";
-
-    if (spot.user_id) {
-
-      const {
-        data: creator
-      } =
-        await supabaseClient
-          .from("profiles")
-          .select("email")
-          .eq(
-            "id",
-            spot.user_id
-          )
-          .maybeSingle();
-
-      if (creator?.email) {
-        creatorText =
-          creator.email;
-      }
-    }
-
-
-    const card =
-      document.createElement("div");
-
-    card.className = "spot";
-
-
-    card.innerHTML = `
-
-      ${
-        imageUrl
-          ? `
-            <img
-              src="${escapeHtml(imageUrl)}"
-              alt="Foto von ${escapeHtml(spot.name)}"
-            >
-          `
-          : ""
-      }
-
-      <div class="spot-content">
-
-        <h3>
-          📍 ${escapeHtml(spot.name)}
-        </h3>
-
-        <span class="category">
-          ${escapeHtml(
-            spot.category || "Sonstiges"
-          )}
-        </span>
-
-        <p>
-          ${escapeHtml(
-            spot.description ||
-            "Keine Beschreibung"
-          )}
-        </p>
-
-        <p class="creator">
-          👤 Erstellt von:
-          <strong>
-            ${escapeHtml(creatorText)}
-          </strong>
-        </p>
-
-        <button
-          class="like-btn ${liked ? "liked" : ""}"
-          data-like="${spot.id}"
-        >
-          ❤️ ${liked ? "Geliked" : "Like"}
-          · ${likeCount || 0}
-        </button>
-
-        ${
-          isAdmin() || spot.user_id === currentUser?.id
-            ? `
-              <button
-                class="delete-btn"
-                data-delete="${spot.id}"
-              >
-                🗑️ Löschen
-              </button>
-            `
-            : ""
-        }
-
-      </div>
-    `;
-
-
-    const likeButton =
-      card.querySelector(
-        "[data-like]"
-      );
-
-    if (likeButton) {
-
-      likeButton.onclick = () =>
-        likeSpot(
-          spot.id,
-          likeButton
-        );
-    }
-
-
-    const deleteButton =
-      card.querySelector(
-        "[data-delete]"
-      );
-
-    if (deleteButton) {
-
-      deleteButton.onclick = () =>
-        deleteSpot(
-          spot.id
-        );
-    }
-
-
-    container.appendChild(card);
   }
+
+
+  const profileMap =
+    Object.fromEntries(
+      profiles.map(
+        profile => [
+
+          profile.id,
+
+          profile.nickname
+
+        ]
+      )
+    );
+
+
+  const photoMap = {};
+
+
+  photos.forEach(
+    photo => {
+
+      if (
+        !photoMap[
+          photo.spot_id
+        ]
+      ) {
+
+        photoMap[
+          photo.spot_id
+        ] =
+          photo.image_url;
+
+      }
+
+    }
+  );
+
+
+  container.innerHTML =
+    filtered
+      .map(
+        spot => {
+
+          const spotLikes =
+            likes.filter(
+              like =>
+                like.spot_id ===
+                spot.id
+            );
+
+
+          const liked =
+            !!currentUser &&
+            spotLikes.some(
+              like =>
+                like.user_id ===
+                currentUser.id
+            );
+
+
+          const canDelete =
+            !!currentUser &&
+            (
+              spot.user_id ===
+                currentUser.id ||
+              isAdmin()
+            );
+
+
+          const nickname =
+            profileMap[
+              spot.user_id
+            ] ||
+            "Unbekannter Nutzer";
+
+
+          const image =
+            photoMap[
+              spot.id
+            ];
+
+
+          return `
+
+            <article class="spot">
+
+              ${
+                image
+                  ? `
+                    <img
+                      src="${escapeHtml(image)}"
+                      alt="Spot Foto"
+                      loading="lazy"
+                    >
+                  `
+                  : ""
+              }
+
+              <div class="spot-content">
+
+                <h3>
+                  📍
+                  ${escapeHtml(
+                    spot.name
+                  )}
+                </h3>
+
+
+                <span class="category">
+
+                  ${escapeHtml(
+                    spot.category ||
+                    "Sonstiges"
+                  )}
+
+                </span>
+
+
+                <p>
+
+                  ${escapeHtml(
+                    spot.description ||
+                    "Keine Beschreibung"
+                  )}
+
+                </p>
+
+
+                <div class="creator">
+
+                  👤 Erstellt von:
+                  ${escapeHtml(
+                    nickname
+                  )}
+
+                </div>
+
+
+                <button
+
+                  class="like-btn ${
+                    liked
+                      ? "liked"
+                      : ""
+                  }"
+
+                  type="button"
+
+                  onclick="
+                    toggleLike(
+                      '${escapeAttr(
+                        spot.id
+                      )}'
+                    )
+                  "
+
+                >
+
+                  ❤️
+                  ${
+                    liked
+                      ? "Geliked"
+                      : "Like"
+                  }
+
+                  ·
+                  ${spotLikes.length}
+
+                </button>
+
+
+                ${
+                  canDelete
+                    ? `
+
+                      <button
+
+                        class="delete-btn"
+
+                        type="button"
+
+                        onclick="
+                          deleteSpot(
+                            '${escapeAttr(
+                              spot.id
+                            )}'
+                          )
+                        "
+
+                      >
+
+                        🗑️ Spot löschen
+
+                      </button>
+
+                    `
+                    : ""
+                }
+
+              </div>
+
+            </article>
+
+          `;
+
+        }
+      )
+      .join("");
+
 }
 
 
@@ -1152,15 +1846,14 @@ async function renderSpots() {
 // LIKE
 // ===============================
 
-async function likeSpot(
-  spotId,
-  button
+async function toggleLike(
+  spotId
 ) {
 
   if (!currentUser) {
 
     showStatus(
-      "❌ Bitte einloggen"
+      "❌ Bitte zuerst einloggen"
     );
 
     openAuthModal();
@@ -1171,7 +1864,7 @@ async function likeSpot(
 
   const {
     data: existing,
-    error: findError
+    error
   } =
     await supabaseClient
       .from("likes")
@@ -1187,11 +1880,11 @@ async function likeSpot(
       .maybeSingle();
 
 
-  if (findError) {
+  if (error) {
 
     showStatus(
       "❌ " +
-      findError.message
+      error.message
     );
 
     return;
@@ -1211,6 +1904,7 @@ async function likeSpot(
           existing.id
         );
 
+
     if (error) {
 
       showStatus(
@@ -1220,6 +1914,7 @@ async function likeSpot(
 
       return;
     }
+
 
     showStatus(
       "💔 Like entfernt"
@@ -1233,9 +1928,15 @@ async function likeSpot(
       await supabaseClient
         .from("likes")
         .insert({
-          spot_id: spotId,
-          user_id: currentUser.id
+
+          spot_id:
+            spotId,
+
+          user_id:
+            currentUser.id
+
         });
+
 
     if (error) {
 
@@ -1247,12 +1948,16 @@ async function likeSpot(
       return;
     }
 
+
     showStatus(
-      "❤️ Geliked!"
+      "❤️ Geliked"
     );
+
   }
 
+
   await renderSpots();
+
 }
 
 
@@ -1265,22 +1970,31 @@ async function deleteSpot(
 ) {
 
   if (!currentUser) {
+
+    showStatus(
+      "❌ Bitte einloggen"
+    );
+
     return;
   }
 
+
   const spot =
     spots.find(
-      s => s.id === spotId
+      item =>
+        String(item.id) ===
+        String(spotId)
     );
+
 
   if (!spot) return;
 
 
-  const allowed =
-    isAdmin() ||
-    spot.user_id === currentUser.id;
-
-  if (!allowed) {
+  if (
+    spot.user_id !==
+      currentUser.id &&
+    !isAdmin()
+  ) {
 
     showStatus(
       "❌ Keine Berechtigung"
@@ -1290,33 +2004,17 @@ async function deleteSpot(
   }
 
 
-  const confirmed =
-    confirm(
-      "Diesen Spot wirklich löschen?"
-    );
-
-  if (!confirmed) {
-    return;
-  }
+  if (
+    !confirm(
+      `Spot "${spot.name}" wirklich löschen?`
+    )
+  ) return;
 
 
   showStatus(
-    "⏳ Spot wird gelöscht..."
+    "⏳ Lösche Spot..."
   );
 
-
-  // FOTOS
-
-  await supabaseClient
-    .from("spot_photos")
-    .delete()
-    .eq(
-      "spot_id",
-      spotId
-    );
-
-
-  // LIKES
 
   await supabaseClient
     .from("likes")
@@ -1327,7 +2025,14 @@ async function deleteSpot(
     );
 
 
-  // SPOT
+  await supabaseClient
+    .from("spot_photos")
+    .delete()
+    .eq(
+      "spot_id",
+      spotId
+    );
+
 
   const {
     error
@@ -1353,178 +2058,128 @@ async function deleteSpot(
 
 
   showStatus(
-    "🗑️ Spot gelöscht"
+    "✅ Spot gelöscht"
   );
 
+
   await loadSpots();
+
+
+  if (isAdmin()) {
+
+    renderAdminPanel();
+
+  }
+
 }
 
 
 // ===============================
-// ADMIN INTERFACE
+// ADMIN PANEL
 // ===============================
-
-async function openAdminPanel() {
-
-  if (!isAdmin()) {
-
-    showStatus(
-      "❌ Keine Admin-Rechte"
-    );
-
-    return;
-  }
-
-  let modal =
-    document.getElementById(
-      "adminModal"
-    );
-
-  if (!modal) {
-
-    modal =
-      document.createElement("div");
-
-    modal.id =
-      "adminModal";
-
-    modal.className =
-      "modal";
-
-    modal.innerHTML = `
-
-      <div class="modal-box">
-
-        <h2>🛡️ Admin Panel</h2>
-
-        <p>
-          Hier siehst du alle Spots
-          und ihre Ersteller.
-        </p>
-
-        <div id="adminSpots">
-          Laden...
-        </div>
-
-        <button
-          class="secondary"
-          onclick="
-            document
-              .getElementById('adminModal')
-              .classList.remove('show')
-          "
-        >
-          Schließen
-        </button>
-
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-  }
-
-  modal.classList.add("show");
-
-  await renderAdminPanel();
-}
-
 
 async function renderAdminPanel() {
 
   const container =
     document.getElementById(
-      "adminSpots"
+      "adminContent"
     );
+
 
   if (!container) return;
 
-  if (!spots.length) {
+
+  if (!isAdmin()) {
 
     container.innerHTML =
-      "<p>Keine Spots vorhanden.</p>";
+      "<p>Keine Berechtigung.</p>";
 
     return;
   }
 
 
-  container.innerHTML = "";
+  container.innerHTML = `
+
+    <h3>
+      📍 Alle Spots
+    </h3>
+
+    ${
+      spots.length
+        ? spots
+            .map(
+              spot => `
+
+                <div class="admin-user">
+
+                  <strong>
+
+                    ${escapeHtml(
+                      spot.name
+                    )}
+
+                  </strong>
+
+                  <br>
+
+                  <small>
+
+                    Erstellt von:
+                    ${escapeHtml(
+                      spot.user_id
+                    )}
+
+                  </small>
 
 
-  for (const spot of spots) {
+                  <button
 
-    const row =
-      document.createElement("div");
+                    class="delete-btn"
 
-    row.style.padding =
-      "12px 0";
+                    type="button"
 
-    row.style.borderBottom =
-      "1px solid #333";
+                    onclick="
+                      deleteSpot(
+                        '${escapeAttr(
+                          spot.id
+                        )}'
+                      )
+                    "
 
+                  >
 
-    row.innerHTML = `
+                    🗑️ Löschen
 
-      <strong>
-        📍 ${escapeHtml(spot.name)}
-      </strong>
+                  </button>
 
-      <br>
+                </div>
 
-      <small>
-        ID:
-        ${escapeHtml(spot.id)}
-      </small>
+              `
+            )
+            .join("")
+        : `
+          <p style="color:#777">
+            Keine Spots vorhanden.
+          </p>
+        `
+    }
 
-      <br>
+  `;
 
-      <small>
-        User:
-        ${escapeHtml(
-          spot.user_id || "unbekannt"
-        )}
-      </small>
-
-      <br><br>
-
-      <button
-        class="delete-btn"
-      >
-        🗑️ Spot löschen
-      </button>
-    `;
-
-
-    row
-      .querySelector("button")
-      .onclick = async () => {
-
-        await deleteSpot(
-          spot.id
-        );
-
-        await renderAdminPanel();
-      };
-
-
-    container.appendChild(row);
-  }
 }
 
 
 // ===============================
-// HTML SICHER MACHEN
+// SICHERHEIT
 // ===============================
 
-function escapeHtml(value) {
+function escapeHtml(
+  value
+) {
 
-  if (
-    value === null ||
-    value === undefined
-  ) {
-    return "";
-  }
-
-  return String(value)
+  return String(
+    value ?? ""
+  )
     .replaceAll(
       "&",
       "&amp;"
@@ -1545,12 +2200,52 @@ function escapeHtml(value) {
       "'",
       "&#039;"
     );
+
+}
+
+
+function escapeAttr(
+  value
+) {
+
+  return String(
+    value ?? ""
+  )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
 }
 
 
 // ===============================
-// GLOBALE BUTTON-FUNKTIONEN
+// GLOBAL
 // ===============================
+
+window.signUp =
+  signUp;
+
+window.signIn =
+  signIn;
+
+window.logout =
+  logout;
+
+window.saveNickname =
+  saveNickname;
+
+window.createSpot =
+  createSpot;
+
+window.useMyLocation =
+  useMyLocation;
+
+window.toggleLike =
+  toggleLike;
+
+window.deleteSpot =
+  deleteSpot;
 
 window.openSpotModal =
   openSpotModal;
@@ -1564,26 +2259,8 @@ window.openAuthModal =
 window.closeAuthModal =
   closeAuthModal;
 
-window.useMyLocation =
-  useMyLocation;
-
-window.createSpot =
-  createSpot;
-
-window.signUp =
-  signUp;
-
-window.signIn =
-  signIn;
-
-window.logout =
-  logout;
-
-window.likeSpot =
-  likeSpot;
-
-window.deleteSpot =
-  deleteSpot;
-
 window.openAdminPanel =
   openAdminPanel;
+
+window.closeAdminPanel =
+  closeAdminPanel;
