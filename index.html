@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>NRW Chillspots 📍</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0f;
+      color: white;
+    }
+
+    header {
+      padding: 18px 20px;
+      background: #111116;
+      border-bottom: 1px solid #29292f;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .logo span {
+      color: #a855f7;
+    }
+
+    .subtitle {
+      color: #9999a3;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .controls {
+      position: absolute;
+      top: 85px;
+      left: 15px;
+      right: 15px;
+      z-index: 1000;
+      display: flex;
+      gap: 8px;
+    }
+
+    #search {
+      flex: 1;
+      padding: 13px 15px;
+      border: none;
+      outline: none;
+      border-radius: 12px;
+      background: #17171d;
+      color: white;
+      font-size: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.3);
+    }
+
+    #addButton {
+      border: none;
+      border-radius: 12px;
+      padding: 0 16px;
+      background: #a855f7;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,.3);
+    }
+
+    #map {
+      height: calc(100vh - 78px);
+      width: 100%;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: #17171d;
+      color: white;
+    }
+
+    .leaflet-popup-content {
+      margin: 15px;
+    }
+
+    .popup-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .popup-category {
+      color: #c084fc;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .popup-description {
+      color: #ccccd2;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .popup-button {
+      margin-top: 12px;
+      width: 100%;
+      border: none;
+      padding: 9px;
+      border-radius: 8px;
+      background: #a855f7;
+      color: white;
+      cursor: pointer;
+    }
+
+    .leaflet-control-zoom a {
+      background: #17171d !important;
+      color: white !important;
+      border-color: #333 !important;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 400px;
+      background: #17171d;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    }
+
+    .modal-box h2 {
+      margin-top: 0;
+    }
+
+    .modal-box input,
+    .modal-box textarea {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid #33333b;
+      border-radius: 10px;
+      background: #0e0e12;
+      color: white;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .modal-box textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #saveSpot {
+      background: #a855f7;
+      color: white;
+    }
+
+    #cancelSpot {
+      background: #292930;
+      color: white;
+    }
+
+    .hint {
+      color: #9999a3;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">📍 <span>NRW</span> Chillspots</div>
+  <div class="subtitle">deine Karte für die besten Spots in NRW</div>
+</header>
+
+<div class="controls">
+  <input
+    id="search"
+    type="text"
+    placeholder="🔎 Stadt oder Spot suchen..."
+  >
+
+  <button id="addButton" title="Spot hinzufügen">+</button>
+</div>
+
+<div id="map"></div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+
+    <h2>📍 Neuen Chillspot</h2>
+
+    <div class="hint">
+      Klicke zuerst auf der Karte auf den gewünschten Standort.
+    </div>
+
+    <label>Name</label>
+    <input
+      id="spotName"
+      type="text"
+      placeholder="z.B. Seepark"
+    >
+
+    <label>Beschreibung</label>
+    <textarea
+      id="spotDescription"
+      placeholder="Was ist dort so nice?"
+    ></textarea>
+
+    <div class="modal-buttons">
+      <button id="cancelSpot">Abbrechen</button>
+      <button id="saveSpot">Spot speichern</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+  // =========================
+  // KARTE
+  // =========================
+
+  const map = L.map("map").setView(
+    [51.4332, 7.6616],
+    9
+  );
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }
+  ).addTo(map);
+
+
+  // =========================
+  // CHILLSPOTS
+  // =========================
+
+  let spots = [
+
+    {
+      name: "Baldeneysee",
+      lat: 51.397,
+      lng: 7.048,
+      category: "🌊 See",
+      description: "Perfekt zum chillen, spazieren und Sonnenuntergang schauen."
+    },
+
+    {
+      name: "Nordsternpark",
+      lat: 51.535,
+      lng: 7.072,
+      category: "🌳 Park",
+      description: "Großer Park mit viel Platz zum Abhängen."
+    },
+
+    {
+      name: "Phoenix See",
+      lat: 51.487,
+      lng: 7.499,
+      category: "🌊 See",
+      description: "Entspannter Spot in Dortmund."
+    },
+
+    {
+      name: "Grugapark",
+      lat: 51.427,
+      lng: 6.995,
+      category: "🌳 Park",
+      description: "Großer Park mit vielen ruhigen Ecken."
+    }
+
+  ];
+
+
+  // =========================
+  // MARKER
+  // =========================
+
+  let markers = [];
+
+  function showSpots(list) {
+
+    markers.forEach(marker => map.removeLayer(marker));
+
+    markers = [];
+
+    list.forEach(spot => {
+
+      const marker = L.marker([
+        spot.lat,
+        spot.lng
+      ]).addTo(map);
+
+      marker.bindPopup(`
+        <div class="popup-title">
+          📍 ${spot.name}
+        </div>
+
+        <div class="popup-category">
+          ${spot.category || "📍 Chillspot"}
+        </div>
+
+        <div class="popup-description">
+          ${spot.description || ""}
+        </div>
+
+        <button
+          class="popup-button"
+          onclick="shareSpot('${encodeURIComponent(spot.name)}')"
+        >
+          🔗 Spot teilen
+        </button>
+      `);
+
+      markers.push(marker);
+
+    });
+
+  }
+
+  showSpots(spots);
+
+
+  // =========================
+  // SUCHE
+  // =========================
+
+  document
+    .getElementById("search")
+    .addEventListener("input", function() {
+
+      const query = this.value.toLowerCase().trim();
+
+      const filtered = spots.filter(spot =>
+        spot.name.toLowerCase().includes(query) ||
+        (spot.description || "").toLowerCase().includes(query) ||
+        (spot.category || "").toLowerCase().includes(query)
+      );
+
+      showSpots(filtered);
+
+    });
+
+
+  // =========================
+  // SPOT HINZUFÜGEN
+  // =========================
+
+  let selectedLocation = null;
+
+  document
+    .getElementById("addButton")
+    .addEventListener("click", function() {
+
+      alert(
+        "Klicke jetzt auf der Karte auf die Stelle, an der dein Chillspot liegt 📍"
+      );
+
+      map.once("click", function(e) {
+
+        selectedLocation = {
+          lat: e.latlng.lat,
+          lng: e.latlng.lng
+        };
+
+        document
+          .getElementById("modal")
+          .style.display = "flex";
+
+      });
+
+    });
+
+
+  // =========================
+  // SPEICHERN
+  // =========================
+
+  document
+    .getElementById("saveSpot")
+    .addEventListener("click", function() {
+
+      const name =
+        document.getElementById("spotName").value.trim();
+
+      const description =
+        document.getElementById("spotDescription").value.trim();
+
+      if (!name) {
+        alert("Gib dem Spot erstmal einen Namen 😭");
+        return;
+      }
+
+      if (!selectedLocation) {
+        alert("Wähle zuerst einen Standort auf der Karte.");
+        return;
+      }
+
+      const newSpot = {
+
+        name: name,
+
+        lat: selectedLocation.lat,
+
+        lng: selectedLocation.lng,
+
+        category: "📍 Chillspot",
+
+        description: description
+
+      };
+
+      spots.push(newSpot);
+
+      showSpots(spots);
+
+      document
+        .getElementById("modal")
+        .style.display = "none";
+
+      document.getElementById("spotName").value = "";
+
+      document.getElementById("spotDescription").value = "";
+
+      selectedLocation = null;
+
+    });
+
+
+  // =========================
+  // ABBRECHEN
+  // =========================
+
+  document
+    .getElementById("cancelSpot")
+    .addEventListener("click", function() {
+
+      document
+        .getElementById("modal")
+        .style.display = "none";
+
+      selectedLocation = null;
+
+    });
+
+
+  // =========================
+  // TEILEN
+  // =========================
+
+  function shareSpot(name) {
+
+    const decodedName = decodeURIComponent(name);
+
+    if (navigator.share) {
+
+      navigator.share({
+        title: "NRW Chillspot 📍",
+        text: decodedName,
+        url: window.location.href
+      });
+
+    } else {
+
+      navigator.clipboard.writeText(
+        window.location.href
+      );
+
+      alert("Link kopiert 🔗");
+
+    }
+
+  }
+
+</script>
+
+</body>
+</html>
