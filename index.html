@@ -1085,6 +1085,35 @@
   }
 
   startApp();
+// ==========================================
+// LIVE-SYNC
+// ==========================================
+
+supabaseClient
+  .channel("spots-live")
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "spots"
+    },
+    (payload) => {
+
+      console.log("🔄 Änderung erkannt:", payload);
+
+      loadSpots();
+
+    }
+  )
+  .subscribe((status) => {
+
+    console.log(
+      "Realtime Status:",
+      status
+    );
+
+  });
 
 </script>
 
