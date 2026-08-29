@@ -1,671 +1,534 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#0d0d0f"
+  >
 
   <title>NRW Chillspots</title>
 
-  <!-- Leaflet CSS -->
+  <!-- =========================
+       STYLE
+  ========================== -->
+
+  <link
+    rel="stylesheet"
+    href="./style.css"
+  >
+
+  <!-- =========================
+       LEAFLET CSS
+  ========================== -->
+
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   >
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Arial, sans-serif;
-      background: #0d0d0f;
-      color: white;
-    }
-
-    body {
-      overflow-x: hidden;
-    }
-
-    header {
-      padding: 18px;
-      background: #151519;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid #29292f;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    header p {
-      margin: 5px 0 0;
-      color: #999;
-      font-size: 14px;
-    }
-
-    .top-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    .primary {
-      background: #22c55e;
-      color: white;
-    }
-
-    .secondary {
-      background: #24242a;
-      color: white;
-    }
-
-    .danger {
-      background: #ef4444;
-      color: white;
-    }
-
-    #map {
-      width: 100%;
-      height: 58vh;
-      min-height: 400px;
-      background: #222;
-    }
-
-    .panel {
-      padding: 16px;
-    }
-
-    .search {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #18181c;
-      color: white;
-      outline: none;
-      margin-bottom: 12px;
-    }
-
-    .spot {
-      background: #17171b;
-      border: 1px solid #29292f;
-      border-radius: 16px;
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
-
-    .spot img {
-      width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .spot-content {
-      padding: 14px;
-    }
-
-    .spot h3 {
-      margin: 0 0 6px;
-    }
-
-    .spot p {
-      color: #aaa;
-      margin: 7px 0;
-    }
-
-    .creator {
-      color: #888;
-      font-size: 13px;
-      margin-top: 10px;
-    }
-
-    .category {
-      display: inline-block;
-      background: #27272d;
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      color: #bbb;
-      margin-top: 5px;
-    }
-
-    .like-btn {
-      width: 100%;
-      margin-top: 12px;
-      background: #ff2d55;
-      color: white;
-      font-weight: 700;
-    }
-
-    .like-btn.liked {
-      background: #ff1744;
-    }
-
-    .delete-btn {
-      width: 100%;
-      margin-top: 8px;
-      background: #292929;
-      color: #ff6b6b;
-      border: 1px solid #ff4444;
-      font-weight: 700;
-    }
-
-    .delete-btn:hover {
-      background: #ff4444;
-      color: white;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .75);
-      z-index: 5000;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-box {
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      overflow-y: auto;
-      background: #17171b;
-      border: 1px solid #303038;
-      border-radius: 20px;
-      padding: 20px;
-    }
-
-    .modal-box h2 {
-      margin-top: 0;
-    }
-
-    .close-button {
-      float: right;
-      background: transparent;
-      color: #aaa;
-      font-size: 25px;
-      padding: 2px 8px;
-    }
-
-    .close-button:hover {
-      color: white;
-    }
-
-    label {
-      display: block;
-      margin-top: 14px;
-      margin-bottom: 6px;
-      color: #bbb;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 13px;
-      border-radius: 11px;
-      border: 1px solid #333;
-      background: #0f0f12;
-      color: white;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .modal-actions button {
-      flex: 1;
-    }
-
-    .full-button {
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .status {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #222229;
-      border: 1px solid #383840;
-      padding: 12px 18px;
-      border-radius: 999px;
-      z-index: 9999;
-      display: none;
-      max-width: 90%;
-      text-align: center;
-    }
-
-    .account-info {
-      color: #aaa;
-      font-size: 13px;
-      margin-top: 8px;
-      word-break: break-all;
-    }
-
-    .empty {
-      text-align: center;
-      padding: 35px 10px;
-      color: #777;
-    }
-
-    .admin-user {
-      background: #202027;
-      border: 1px solid #303038;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 8px;
-    }
-
-    .admin-user strong {
-      color: #22c55e;
-    }
-  </style>
 </head>
 
 <body>
 
-<header>
+  <!-- =========================
+       HEADER
+  ========================== -->
 
-  <h1>📍 NRW Chillspots</h1>
+  <header>
 
-  <p>
-    finde und teile geile Spots in NRW
-  </p>
+    <h1>
+      📍 NRW Chillspots
+    </h1>
 
-  <div class="top-buttons">
-
-    <button
-      id="spotButton"
-      class="primary"
-      type="button">
-      ➕ Spot
-    </button>
-
-    <button
-      id="accountButton"
-      class="secondary"
-      type="button">
-      👤 Account
-    </button>
-
-    <button
-      id="adminButton"
-      class="secondary"
-      type="button"
-      style="display:none">
-      🛡️ Admin
-    </button>
-
-  </div>
-
-  <div
-    id="accountInfo"
-    class="account-info">
-    Nicht eingeloggt
-  </div>
-
-</header>
-
-
-<!-- SUCHE -->
-
-<div class="panel">
-
-  <input
-    id="search"
-    class="search"
-    type="text"
-    placeholder="🔎 Stadt oder Spot suchen..."
-  >
-
-</div>
-
-
-<!-- KARTE -->
-
-<div id="map"></div>
-
-
-<!-- SPOTS -->
-
-<div class="panel">
-
-  <h2>🔥 Chillspots</h2>
-
-  <div id="spotList"></div>
-
-</div>
-
-
-<!-- ========================= -->
-<!-- SPOT MODAL -->
-<!-- ========================= -->
-
-<div
-  class="modal"
-  id="spotModal">
-
-  <div class="modal-box">
-
-    <button
-      id="closeSpotBtn"
-      class="close-button"
-      type="button">
-      ✕
-    </button>
-
-    <h2>📍 Neuen Chillspot</h2>
-
-    <p style="color:#999">
-      Klicke auf der Karte auf den gewünschten Standort.
+    <p>
+      finde und teile geile Spots in NRW
     </p>
 
-    <label>
-      Name
-    </label>
-
-    <input
-      id="spotName"
-      type="text"
-      placeholder="z.B. Seepark"
-    >
-
-    <label>
-      Beschreibung
-    </label>
-
-    <textarea
-      id="spotDescription"
-      placeholder="Was ist an diesem Spot besonders?"
-    ></textarea>
-
-    <label>
-      Kategorie
-    </label>
-
-    <select id="spotCategory">
-
-      <option value="Park">
-        🌳 Park
-      </option>
-
-      <option value="See">
-        🌊 See
-      </option>
-
-      <option value="Sport">
-        ⚽ Sport
-      </option>
-
-      <option value="Aussicht">
-        🌄 Aussicht
-      </option>
-
-      <option value="Gaming">
-        🎮 Gaming
-      </option>
-
-      <option value="Sonstiges">
-        📍 Sonstiges
-      </option>
-
-    </select>
-
-    <label>
-      Foto
-    </label>
-
-    <input
-      id="spotPhoto"
-      type="file"
-      accept="image/*"
-    >
-
-    <p
-      id="selectedLocation"
-      style="color:#22c55e">
-      Noch kein Standort ausgewählt
-    </p>
-
-    <button
-      id="myLocationBtn"
-      class="secondary full-button"
-      type="button">
-      📍 Meinen Standort verwenden
-    </button>
-
-    <div class="modal-actions">
+    <div class="top-buttons">
 
       <button
-        id="cancelSpotBtn"
-        class="secondary"
-        type="button">
-        Abbrechen
+        id="spotButton"
+        class="primary"
+        type="button"
+      >
+        ➕ Spot
       </button>
 
       <button
-        id="publishSpotBtn"
-        class="primary"
-        type="button">
-        🚀 Veröffentlichen
+        id="accountButton"
+        class="secondary"
+        type="button"
+      >
+        👤 Account
+      </button>
+
+      <button
+        id="adminButton"
+        class="secondary"
+        type="button"
+        style="display:none"
+      >
+        🛡️ Admin
       </button>
 
     </div>
 
+    <div
+      id="accountInfo"
+      class="account-info"
+    >
+      Nicht eingeloggt
+    </div>
+
+  </header>
+
+
+  <!-- =========================
+       SUCHE
+  ========================== -->
+
+  <div class="panel">
+
+    <input
+      id="search"
+      class="search"
+      type="text"
+      placeholder="🔎 Stadt oder Spot suchen..."
+      autocomplete="off"
+    >
+
   </div>
 
-</div>
+
+  <!-- =========================
+       KARTE
+  ========================== -->
+
+  <div id="map"></div>
 
 
-<!-- ========================= -->
-<!-- ACCOUNT MODAL -->
-<!-- ========================= -->
+  <!-- =========================
+       SPOT LISTE
+  ========================== -->
 
-<div
-  class="modal"
-  id="authModal">
-
-  <div class="modal-box">
-
-    <button
-      id="closeAccountBtn"
-      class="close-button"
-      type="button">
-      ✕
-    </button>
+  <main class="panel">
 
     <h2>
-      👤 Account
+      🔥 Chillspots
     </h2>
 
-    <div id="loggedOutArea">
+    <div id="spotList">
 
-      <label>
-        E-Mail
+      <div class="empty">
+        Lade Spots...
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- ==================================================
+       SPOT MODAL
+  =================================================== -->
+
+  <div
+    id="spotModal"
+    class="modal"
+  >
+
+    <div class="modal-box">
+
+      <!-- X -->
+
+      <button
+        id="closeSpotBtn"
+        class="close-button"
+        type="button"
+        aria-label="Fenster schließen"
+      >
+        ✕
+      </button>
+
+
+      <h2>
+        📍 Neuen Chillspot
+      </h2>
+
+      <p style="color:#999">
+        Wähle einen Standort auf der Karte oder benutze deinen aktuellen Standort.
+      </p>
+
+
+      <!-- NAME -->
+
+      <label for="spotName">
+        Name
       </label>
 
       <input
-        id="email"
-        type="email"
-        placeholder="deine@email.de"
+        id="spotName"
+        type="text"
+        placeholder="z.B. Baldeneysee"
+        maxlength="80"
       >
 
-      <label>
-        Passwort
+
+      <!-- BESCHREIBUNG -->
+
+      <label for="spotDescription">
+        Beschreibung
+      </label>
+
+      <textarea
+        id="spotDescription"
+        placeholder="Was ist an diesem Spot besonders?"
+        maxlength="1000"
+      ></textarea>
+
+
+      <!-- KATEGORIE -->
+
+      <label for="spotCategory">
+        Kategorie
+      </label>
+
+      <select id="spotCategory">
+
+        <option value="Park">
+          🌳 Park
+        </option>
+
+        <option value="See">
+          🌊 See
+        </option>
+
+        <option value="Sport">
+          ⚽ Sport
+        </option>
+
+        <option value="Aussicht">
+          🌄 Aussicht
+        </option>
+
+        <option value="Gaming">
+          🎮 Gaming
+        </option>
+
+        <option value="Sonstiges">
+          📍 Sonstiges
+        </option>
+
+      </select>
+
+
+      <!-- FOTO -->
+
+      <label for="spotPhoto">
+        Foto
       </label>
 
       <input
-        id="password"
-        type="password"
-        placeholder="Mindestens 6 Zeichen"
+        id="spotPhoto"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
       >
+
+      <p
+        style="color:#888;font-size:13px"
+      >
+        📸 Optionales Foto hinzufügen
+      </p>
+
+
+      <!-- POSITION -->
+
+      <p
+        id="selectedLocation"
+        style="color:#22c55e"
+      >
+        📍 Noch kein Standort ausgewählt
+      </p>
+
+
+      <!-- MEIN STANDORT -->
+
+      <button
+        id="myLocationBtn"
+        class="secondary full-button"
+        type="button"
+      >
+        📍 Meinen Standort verwenden
+      </button>
+
+
+      <!-- BUTTONS -->
 
       <div class="modal-actions">
 
         <button
-          id="registerBtn"
-          class="primary"
-          type="button">
-          ✨ Registrieren
+          id="cancelSpotBtn"
+          class="secondary"
+          type="button"
+        >
+          Abbrechen
         </button>
 
         <button
-          id="loginBtn"
-          class="secondary"
-          type="button">
-          🔑 Einloggen
+          id="publishSpotBtn"
+          class="primary"
+          type="button"
+        >
+          🚀 Veröffentlichen
         </button>
 
       </div>
 
     </div>
 
+  </div>
 
-    <div
-      id="loggedInArea"
-      style="display:none">
 
-      <p
-        id="loggedInEmail"
-        style="color:#aaa">
-      </p>
+  <!-- ==================================================
+       ACCOUNT MODAL
+  =================================================== -->
 
-      <div
-        id="nicknameArea"
-        style="margin-top:15px">
+  <div
+    id="authModal"
+    class="modal"
+  >
 
-        <label>
-          Dein Nickname
+    <div class="modal-box">
+
+      <!-- X -->
+
+      <button
+        id="closeAccountBtn"
+        class="close-button"
+        type="button"
+        aria-label="Account schließen"
+      >
+        ✕
+      </button>
+
+
+      <h2>
+        👤 Account
+      </h2>
+
+
+      <!-- =========================
+           AUSGELOGGT
+      ========================== -->
+
+      <div id="loggedOutArea">
+
+        <label for="email">
+          E-Mail
         </label>
 
         <input
-          id="nicknameInput"
-          maxlength="24"
-          placeholder="z.B. Oskar123"
+          id="email"
+          type="email"
+          placeholder="deine@email.de"
+          autocomplete="email"
         >
 
+
+        <label for="password">
+          Passwort
+        </label>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Mindestens 6 Zeichen"
+          autocomplete="current-password"
+        >
+
+
+        <div class="modal-actions">
+
+          <button
+            id="registerBtn"
+            class="primary"
+            type="button"
+          >
+            ✨ Registrieren
+          </button>
+
+          <button
+            id="loginBtn"
+            class="secondary"
+            type="button"
+          >
+            🔑 Einloggen
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================
+           EINGELOGGT
+      ========================== -->
+
+      <div
+        id="loggedInArea"
+        style="display:none"
+      >
+
+        <p
+          id="loggedInEmail"
+          style="color:#aaa"
+        ></p>
+
+
+        <!-- NICKNAME -->
+
+        <div id="nicknameArea">
+
+          <label for="nicknameInput">
+            Dein Nickname
+          </label>
+
+          <input
+            id="nicknameInput"
+            type="text"
+            maxlength="24"
+            placeholder="z.B. Oskar123"
+            autocomplete="off"
+          >
+
+          <small
+            style="
+              display:block;
+              color:#777;
+              margin-top:6px;
+            "
+          >
+            Dieser Name wird anderen bei deinen Spots angezeigt.
+          </small>
+
+          <button
+            id="saveNicknameBtn"
+            class="primary full-button"
+            type="button"
+          >
+            💾 Nickname speichern
+          </button>
+
+        </div>
+
+
+        <!-- LOGOUT -->
+
         <button
-          id="saveNicknameBtn"
-          class="primary full-button"
-          type="button">
-          💾 Nickname speichern
+          id="logoutBtn"
+          class="secondary full-button"
+          type="button"
+        >
+          🚪 Ausloggen
         </button>
 
       </div>
 
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       ADMIN MODAL
+  =================================================== -->
+
+  <div
+    id="adminModal"
+    class="modal"
+  >
+
+    <div class="modal-box">
+
+      <!-- X -->
+
       <button
-        id="logoutBtn"
-        class="secondary full-button"
-        type="button">
-        🚪 Ausloggen
+        id="closeAdminBtn"
+        class="close-button"
+        type="button"
+        aria-label="Admin schließen"
+      >
+        ✕
       </button>
 
-    </div>
 
-  </div>
+      <h2>
+        🛡️ Admin Panel
+      </h2>
 
-</div>
-
-
-<!-- ========================= -->
-<!-- ADMIN MODAL -->
-<!-- ========================= -->
-
-<div
-  class="modal"
-  id="adminModal">
-
-  <div class="modal-box">
-
-    <button
-      id="closeAdminBtn"
-      class="close-button"
-      type="button">
-      ✕
-    </button>
-
-    <h2>
-      🛡️ Admin Panel
-    </h2>
-
-    <p style="color:#999">
-      Hier kannst du Inhalte verwalten.
-    </p>
-
-    <div id="adminContent">
-
-      <p style="color:#777">
-        Lade Admin-Daten...
+      <p style="color:#999">
+        Verwaltung von Nutzern und Spots
       </p>
 
+
+      <div id="adminContent">
+
+        <p style="color:#777">
+          Lade Admin-Daten...
+        </p>
+
+      </div>
+
     </div>
 
   </div>
 
-</div>
+
+  <!-- =========================
+       STATUS
+  ========================== -->
+
+  <div
+    id="status"
+    class="status"
+  ></div>
 
 
-<!-- STATUS -->
+  <!-- ==================================================
+       JAVASCRIPT BIBLIOTHEKEN
+  =================================================== -->
 
-<div
-  id="status"
-  class="status">
-</div>
+  <!-- Leaflet -->
 
-
-<!-- LEAFLET -->
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  ></script>
 
 
-<!-- SUPABASE -->
+  <!-- Supabase -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<!-- HAUPT-JAVASCRIPT -->
-
-<script src="./app.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
 
 
-<!-- NICKNAME / PROFILE -->
+  <!-- ==================================================
+       DEIN JAVASCRIPT
+  =================================================== -->
 
-<script src="./profile.js"></script>
+  <script src="./app.js"></script>
+
+  <script src="./profile.js"></script>
 
 
 </body>
+
 </html>
