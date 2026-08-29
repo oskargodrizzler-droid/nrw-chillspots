@@ -516,7 +516,60 @@
     }
 
   }
+let userLocationMarker = null;
+let userLocationCircle = null;
 
+document.getElementById("locationButton").addEventListener("click", function () {
+
+  if (!navigator.geolocation) {
+    alert("Dein Browser unterstützt keinen Standort.");
+    return;
+  }
+
+  this.textContent = "⏳";
+
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      if (userLocationMarker) {
+        map.removeLayer(userLocationMarker);
+      }
+
+      if (userLocationCircle) {
+        map.removeLayer(userLocationCircle);
+      }
+
+      userLocationMarker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup("📍 Du bist hier")
+        .openPopup();
+
+      userLocationCircle = L.circle([lat, lng], {
+        radius: position.coords.accuracy
+      }).addTo(map);
+
+      map.setView([lat, lng], 16);
+
+      document.getElementById("locationButton").textContent = "📍";
+    },
+
+    function(error) {
+
+      document.getElementById("locationButton").textContent = "📍";
+
+      alert("Standort konnte nicht abgerufen werden. Bitte erlaube deinem Browser den Standortzugriff.");
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 5000
+    }
+  );
+});
 </script>
 
 </body>
