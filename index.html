@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NRW Chillspots 📍</title>
+  <title>NRW Chillspots</title>
 
-  <!-- Leaflet -->
+  <!-- LEAFLET -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -17,262 +17,244 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       font-family: Arial, sans-serif;
-      background: #0b0f0d;
+      background: #080808;
       color: white;
+    }
+
+    body {
       overflow: hidden;
     }
 
+    /* HEADER */
+
     header {
-      height: 70px;
-      background: #111815;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 18px;
-      border-bottom: 1px solid #26302b;
+      height: 85px;
+      background: #111;
+      border-bottom: 1px solid #292929;
+      padding: 14px 18px;
       position: relative;
       z-index: 1000;
     }
 
-    .logo {
-      font-size: 22px;
-      font-weight: 800;
+    header h1 {
+      margin: 0;
+      font-size: 25px;
     }
 
-    .logo span {
-      color: #4ade80;
+    header p {
+      margin: 5px 0 0;
+      color: #999;
+      font-size: 14px;
     }
 
-    .top-buttons {
+    /* CONTROLS */
+
+    .controls {
+      position: absolute;
+      top: 98px;
+      left: 12px;
+      right: 12px;
+      z-index: 1000;
+
       display: flex;
       gap: 8px;
     }
 
-    button {
-      border: none;
-      cursor: pointer;
-      font-weight: 700;
-    }
+    .controls input {
+      flex: 1;
+      min-width: 0;
 
-    .location-btn,
-    .add-btn {
-      background: #1f2937;
+      padding: 13px 15px;
+      border-radius: 13px;
+
+      border: 1px solid #333;
+      background: rgba(20,20,20,.95);
       color: white;
-      padding: 11px 14px;
-      border-radius: 12px;
-    }
 
-    .add-btn {
-      background: #22c55e;
-      color: #06100a;
-    }
-
-    #map {
-      position: absolute;
-      top: 70px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 1;
-    }
-
-    .search-box {
-      position: absolute;
-      z-index: 500;
-      top: 85px;
-      left: 15px;
-      right: 15px;
-      max-width: 500px;
-      margin: auto;
-    }
-
-    .search-box input {
-      width: 100%;
-      padding: 15px 18px;
-      border-radius: 15px;
-      border: 1px solid #39433e;
-      background: rgba(15, 23, 19, 0.95);
-      color: white;
-      outline: none;
-      font-size: 16px;
-    }
-
-    .location-info {
-      position: absolute;
-      z-index: 500;
-      bottom: 25px;
-      left: 15px;
-      right: 15px;
-      max-width: 450px;
-      margin: auto;
-      background: rgba(12, 18, 15, 0.95);
-      border: 1px solid #344039;
-      border-radius: 18px;
-      padding: 15px;
-      display: none;
-    }
-
-    .location-info button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      background: #22c55e;
-      color: #06100a;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      z-index: 5000;
-      align-items: center;
-      justify-content: center;
-      padding: 15px;
-    }
-
-    .modal-box {
-      width: 100%;
-      max-width: 450px;
-      max-height: 90vh;
-      overflow-y: auto;
-      background: #111815;
-      border: 1px solid #344039;
-      border-radius: 22px;
-      padding: 22px;
-    }
-
-    .modal-box h2 {
-      margin-top: 0;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      margin-bottom: 7px;
-      font-weight: 700;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 100%;
-      background: #0b0f0d;
-      border: 1px solid #39433e;
-      border-radius: 12px;
-      padding: 13px;
-      color: white;
       font-size: 15px;
       outline: none;
     }
 
-    textarea {
-      min-height: 90px;
-      resize: vertical;
+    .controls input:focus {
+      border-color: #777;
     }
 
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
+    button {
+      border: none;
+      border-radius: 13px;
+      padding: 0 16px;
+
+      background: white;
+      color: black;
+
+      font-size: 18px;
+      font-weight: bold;
+
+      cursor: pointer;
     }
 
-    .modal-buttons button {
-      flex: 1;
-      padding: 13px;
+    button:active {
+      transform: scale(.96);
+    }
+
+    /* MAP */
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 85px);
+      min-height: 400px;
+      background: #222;
+    }
+
+    /* LOCATION BUTTON */
+
+    .location-button {
+      position: absolute;
+
+      right: 15px;
+      bottom: 25px;
+
+      z-index: 1000;
+
+      width: 55px;
+      height: 55px;
+
+      padding: 0;
+
+      border-radius: 50%;
+
+      background: white;
+      color: black;
+
+      font-size: 23px;
+
+      box-shadow: 0 3px 15px rgba(0,0,0,.4);
+    }
+
+    /* STATUS */
+
+    .status {
+      position: absolute;
+
+      left: 50%;
+      bottom: 25px;
+
+      transform: translateX(-50%);
+
+      z-index: 2000;
+
+      background: rgba(15,15,15,.95);
+
+      border: 1px solid #333;
+
+      padding: 11px 17px;
+
       border-radius: 12px;
+
+      display: none;
+
+      white-space: nowrap;
     }
 
-    .cancel {
-      background: #29312d;
-      color: white;
-    }
-
-    .publish {
-      background: #22c55e;
-      color: #06100a;
-    }
+    /* ADD HINT */
 
     .hint {
-      background: #17211c;
-      padding: 12px;
+      position: absolute;
+
+      top: 155px;
+      left: 50%;
+
+      transform: translateX(-50%);
+
+      z-index: 2000;
+
+      background: rgba(10,10,10,.95);
+
+      border: 1px solid #333;
+
+      padding: 10px 15px;
+
       border-radius: 12px;
+
+      display: none;
+
       font-size: 14px;
-      color: #b8c4bd;
-      margin-bottom: 10px;
     }
 
-    .spot-card {
-      min-width: 230px;
+    /* POPUP */
+
+    .leaflet-popup-content-wrapper {
+      background: #151515;
+      color: white;
+      border-radius: 13px;
     }
 
-    .spot-image {
-      width: 100%;
-      height: 130px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 8px;
+    .leaflet-popup-tip {
+      background: #151515;
     }
 
-    .spot-name {
+    .leaflet-popup-content {
+      margin: 14px;
+      min-width: 180px;
+    }
+
+    .spot-title {
       font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 5px;
+      font-weight: bold;
+      margin-bottom: 6px;
     }
 
     .spot-category {
-      color: #4ade80;
+      color: #aaa;
       font-size: 13px;
-      margin-bottom: 7px;
+      margin-bottom: 8px;
     }
 
     .spot-description {
-      color: #c7cec9;
       font-size: 14px;
-      margin-bottom: 10px;
+      line-height: 1.4;
     }
 
-    .like-btn {
-      background: #202923;
-      color: white;
-      padding: 8px 12px;
-      border-radius: 10px;
+    .coords {
+      color: #777;
+      font-size: 11px;
+      margin-top: 8px;
     }
 
-    .like-btn.liked {
-      background: #ef4444;
-    }
+    /* LEAFLET MOBILE FIX */
 
-    .status {
-      position: fixed;
-      top: 80px;
-      right: 15px;
-      z-index: 6000;
-      background: #111815;
-      border: 1px solid #344039;
-      padding: 12px 15px;
-      border-radius: 12px;
-      display: none;
-      max-width: 300px;
+    .leaflet-control-zoom {
+      margin-top: 150px !important;
     }
 
     @media (max-width: 600px) {
-      header {
-        padding: 0 10px;
+
+      header h1 {
+        font-size: 22px;
       }
 
-      .logo {
-        font-size: 18px;
+      header p {
+        font-size: 12px;
       }
 
-      .location-btn,
-      .add-btn {
-        padding: 9px 10px;
-        font-size: 13px;
+      .controls {
+        top: 98px;
+      }
+
+      .controls button {
+        width: 48px;
+        padding: 0;
+      }
+
+      .leaflet-control-zoom {
+        margin-top: 155px !important;
       }
     }
   </style>
@@ -280,885 +262,826 @@
 
 <body>
 
-<header>
-  <div class="logo">📍 NRW <span>Chillspots</span></div>
+  <!-- HEADER -->
 
-  <div class="top-buttons">
-    <button class="location-btn" onclick="findMe()">
-      📍 Mein Standort
-    </button>
+  <header>
+    <h1>📍 NRW Chillspots</h1>
+    <p>die besten Chillspots in ganz NRW</p>
+  </header>
 
-    <button class="add-btn" onclick="openModal()">
-      ➕ Spot
-    </button>
-  </div>
-</header>
 
-<div class="search-box">
-  <input
-    id="search"
-    type="text"
-    placeholder="🔎 Stadt oder Spot suchen..."
-    oninput="searchSpots()"
-  >
-</div>
+  <!-- SUCHLEISTE -->
 
-<div id="map"></div>
+  <div class="controls">
 
-<div id="status" class="status"></div>
-
-<div id="locationInfo" class="location-info">
-  <b>📍 Standort gefunden</b>
-  <div id="locationText"></div>
-
-  <button onclick="addCurrentLocation()">
-    ➕ Hier Chillspot hinzufügen
-  </button>
-</div>
-
-<!-- ADD SPOT MODAL -->
-
-<div class="modal" id="modal">
-
-  <div class="modal-box">
-
-    <h2>📍 Neuen Chillspot</h2>
-
-    <div class="hint">
-      Klicke zuerst auf der Karte auf den gewünschten Standort.
-    </div>
-
-    <div id="selectedLocation">
-      Noch kein Standort ausgewählt
-    </div>
-
-    <label>Name</label>
     <input
-      id="spotName"
+      id="search"
       type="text"
-      placeholder="z.B. Stadtpark"
+      placeholder="🔎 Stadt oder Spot suchen..."
     >
 
-    <label>Beschreibung</label>
-    <textarea
-      id="spotDescription"
-      placeholder="Warum ist der Spot nice?"
-    ></textarea>
-
-    <label>Kategorie</label>
-
-    <select id="spotCategory">
-      <option value="🌳 Natur">🌳 Natur</option>
-      <option value="🏞️ Park">🏞️ Park</option>
-      <option value="🌊 Wasser">🌊 Wasser</option>
-      <option value="🏀 Sport">🏀 Sport</option>
-      <option value="🌆 Aussicht">🌆 Aussicht</option>
-      <option value="☕ Essen & Trinken">☕ Essen & Trinken</option>
-      <option value="🎮 Freizeit">🎮 Freizeit</option>
-      <option value="🔥 Sonstiges">🔥 Sonstiges</option>
-    </select>
-
-    <label>📸 Foto</label>
-    <input
-      id="spotPhoto"
-      type="file"
-      accept="image/*"
+    <button
+      id="locationButton"
+      title="Meinen Standort"
     >
+      📍
+    </button>
 
-    <div class="modal-buttons">
-
-      <button class="cancel" onclick="closeModal()">
-        Abbrechen
-      </button>
-
-      <button class="publish" onclick="publishSpot()">
-        🚀 Veröffentlichen
-      </button>
-
-    </div>
+    <button
+      id="addButton"
+      title="Chillspot hinzufügen"
+    >
+      ＋
+    </button>
 
   </div>
-</div>
 
 
-<!-- Supabase -->
-<script src="https://ayukjqhmmgqbgtiusvsx.supabase.co"></script>
+  <!-- HINWEIS -->
 
-<!-- Leaflet -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <div
+    id="hint"
+    class="hint"
+  >
+    📍 Klicke auf die Karte, um einen Chillspot zu setzen
+  </div>
 
 
-<script>
+  <!-- KARTE -->
 
-  /* =====================================================
-     SUPABASE
-     ===================================================== */
+  <div id="map"></div>
 
-  const SUPABASE_URL = "HIER_DEINE_SUPABASE_PROJECT_URL_EINSETZEN";
 
-  const SUPABASE_KEY =
-    "sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
+  <!-- LIVE LOCATION -->
 
-  const supabaseClient =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
+  <button
+    id="liveLocationButton"
+    class="location-button"
+    title="Live-Standort"
+  >
+    🎯
+  </button>
+
+
+  <!-- STATUS -->
+
+  <div
+    id="status"
+    class="status"
+  ></div>
+
+
+  <!-- LEAFLET JS -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+  <!-- SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <script>
+
+    /* =========================================
+       SUPABASE
+    ========================================= */
+
+    const SUPABASE_URL =
+      "https://ayukjqhmmgqbgtiusvsx.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    /* =========================================
+       KARTE ERSTELLEN
+    ========================================= */
+
+    const map = L.map("map").setView(
+      [51.4332, 7.0116],
+      9
     );
 
 
-  /* =====================================================
-     MAP
-     ===================================================== */
+    /* OPENSTREETMAP */
 
-  const map = L.map("map").setView(
-    [51.4332, 7.1000],
-    9
-  );
+    L.tileLayer(
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          "&copy; OpenStreetMap contributors"
+      }
+    ).addTo(map);
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap"
+
+    /* =========================================
+       VARIABLEN
+    ========================================= */
+
+    let addMode = false;
+
+    let selectedLocation = null;
+
+    let userMarker = null;
+
+    let accuracyCircle = null;
+
+    let spotMarkers = [];
+
+
+    /* =========================================
+       STATUS
+    ========================================= */
+
+    function showStatus(message) {
+
+      const status =
+        document.getElementById("status");
+
+      status.textContent = message;
+
+      status.style.display = "block";
+
+      setTimeout(() => {
+
+        status.style.display = "none";
+
+      }, 3000);
     }
-  ).addTo(map);
 
 
-  let selectedLocation = null;
-  let currentLocation = null;
-  let markers = [];
-  let allSpots = [];
+    /* =========================================
+       HTML SICHER MACHEN
+    ========================================= */
+
+    function escapeHTML(value) {
+
+      if (value === null || value === undefined) {
+        return "";
+      }
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
 
-  /* =====================================================
-     MAP CLICK
-     ===================================================== */
+    /* =========================================
+       SPOTS LADEN
+    ========================================= */
 
-  map.on("click", function(e) {
+    async function loadSpots() {
 
-    selectedLocation = {
-      lat: e.latlng.lat,
-      lng: e.latlng.lng
-    };
+      console.log("Lade Chillspots...");
 
-    document.getElementById("selectedLocation").innerHTML =
-      `📍 ${e.latlng.lat.toFixed(5)},
-      ${e.latlng.lng.toFixed(5)}`;
-
-    openModal();
-
-  });
-
-
-  /* =====================================================
-     LOAD SPOTS
-     ===================================================== */
-
-  async function loadSpots() {
-
-    showStatus("⏳ Lade Chillspots...");
-
-    const { data, error } =
-      await supabaseClient
+      const {
+        data,
+        error
+      } = await supabaseClient
         .from("spots")
         .select("*")
         .order("id", {
           ascending: false
         });
 
-    if (error) {
 
-      console.error(error);
+      if (error) {
 
-      showStatus(
-        "❌ Spots konnten nicht geladen werden"
-      );
+        console.error(
+          "Supabase Fehler:",
+          error
+        );
 
-      return;
-    }
+        showStatus(
+          "⚠️ Spots konnten nicht geladen werden"
+        );
 
-    allSpots = data || [];
-
-    renderSpots(allSpots);
-
-    showStatus(
-      `✅ ${allSpots.length} Chillspots geladen`
-    );
-  }
-
-
-  /* =====================================================
-     RENDER SPOTS
-     ===================================================== */
-
-  function renderSpots(spots) {
-
-    markers.forEach(marker => {
-      map.removeLayer(marker);
-    });
-
-    markers = [];
-
-
-    spots.forEach(spot => {
-
-      const lat =
-        spot.latitude ??
-        spot.lat;
-
-      const lng =
-        spot.longitude ??
-        spot.lng;
-
-      if (
-        lat === null ||
-        lat === undefined ||
-        lng === null ||
-        lng === undefined
-      ) {
         return;
       }
 
 
-      let imageHTML = "";
-
-      const imageUrl =
-        spot.image_url ||
-        spot.photo_url ||
-        spot.image;
+      console.log(
+        "Spots geladen:",
+        data
+      );
 
 
-      if (imageUrl) {
+      /* Alte Marker entfernen */
 
-        imageHTML = `
-          <img
-            class="spot-image"
-            src="${escapeHTML(imageUrl)}"
-          >
-        `;
-      }
+      spotMarkers.forEach(marker => {
 
-
-      const likes =
-        spot.likes ||
-        0;
-
-
-      const popup = `
-
-        <div class="spot-card">
-
-          ${imageHTML}
-
-          <div class="spot-name">
-            📍 ${escapeHTML(spot.name || "Chillspot")}
-          </div>
-
-          <div class="spot-category">
-            ${escapeHTML(spot.category || "🔥 Chillspot")}
-          </div>
-
-          <div class="spot-description">
-            ${escapeHTML(
-              spot.description ||
-              "Kein Beschreibungstext"
-            )}
-          </div>
-
-          <button
-            class="like-btn"
-            onclick="likeSpot('${spot.id}', this)"
-          >
-            ❤️ ${likes}
-          </button>
-
-        </div>
-      `;
-
-
-      const marker =
-        L.marker([lat, lng])
-          .addTo(map)
-          .bindPopup(popup);
-
-
-      markers.push(marker);
-
-    });
-
-  }
-
-
-  /* =====================================================
-     SEARCH
-     ===================================================== */
-
-  function searchSpots() {
-
-    const query =
-      document
-        .getElementById("search")
-        .value
-        .toLowerCase()
-        .trim();
-
-
-    if (!query) {
-
-      renderSpots(allSpots);
-
-      return;
-    }
-
-
-    const filtered =
-      allSpots.filter(spot => {
-
-        const text = `
-
-          ${spot.name || ""}
-
-          ${spot.description || ""}
-
-          ${spot.category || ""}
-
-        `.toLowerCase();
-
-
-        return text.includes(query);
+        map.removeLayer(marker);
 
       });
 
+      spotMarkers = [];
 
-    renderSpots(filtered);
 
+      /* Neue Marker */
 
-    if (filtered.length === 0) {
+      (data || []).forEach(spot => {
 
-      showStatus(
-        "🔎 Keine Chillspots gefunden"
-      );
+        if (
+          spot.latitude === null ||
+          spot.latitude === undefined ||
+          spot.longitude === null ||
+          spot.longitude === undefined
+        ) {
+          return;
+        }
 
-    } else {
 
-      showStatus(
-        `🔎 ${filtered.length} Spot(s) gefunden`
-      );
+        const marker = L.marker([
+          Number(spot.latitude),
+          Number(spot.longitude)
+        ]).addTo(map);
 
-    }
 
-  }
+        const name =
+          escapeHTML(
+            spot.name || "Chillspot"
+          );
 
+        const category =
+          escapeHTML(
+            spot.category || "Chillspot"
+          );
 
-  /* =====================================================
-     ADD SPOT
-     ===================================================== */
-
-  function openModal() {
-
-    document.getElementById("modal").style.display =
-      "flex";
-
-  }
-
-
-  function closeModal() {
-
-    document.getElementById("modal").style.display =
-      "none";
-
-  }
-
-
-  /* =====================================================
-     CURRENT LOCATION
-     ===================================================== */
-
-  function findMe() {
-
-    if (!navigator.geolocation) {
-
-      showStatus(
-        "❌ Dein Browser unterstützt Standort nicht."
-      );
-
-      return;
-    }
-
-
-    showStatus(
-      "📍 Standort wird gesucht..."
-    );
-
-
-    navigator.geolocation.getCurrentPosition(
-
-      function(position) {
-
-        const lat =
-          position.coords.latitude;
-
-        const lng =
-          position.coords.longitude;
-
-
-        currentLocation = {
-          lat,
-          lng
-        };
-
-
-        map.setView(
-          [lat, lng],
-          15
-        );
-
-
-        L.circleMarker(
-          [lat, lng],
-          {
-            radius: 9,
-            color: "#22c55e",
-            fillColor: "#22c55e",
-            fillOpacity: 1
-          }
-        )
-        .addTo(map)
-        .bindPopup(
-          "📍 Du bist hier"
-        )
-        .openPopup();
-
-
-        document.getElementById(
-          "locationInfo"
-        ).style.display = "block";
-
-
-        document.getElementById(
-          "locationText"
-        ).innerText =
-          `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-
-
-        showStatus(
-          "✅ Standort gefunden"
-        );
-
-      },
-
-      function(error) {
-
-        console.error(error);
-
-        showStatus(
-          "❌ Standort konnte nicht ermittelt werden. Erlaube deinem Browser den Standortzugriff."
-        );
-
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-
-    );
-
-  }
-
-
-  /* =====================================================
-     ADD CURRENT LOCATION
-     ===================================================== */
-
-  function addCurrentLocation() {
-
-    if (!currentLocation) {
-
-      showStatus(
-        "❌ Erst deinen Standort suchen."
-      );
-
-      return;
-    }
-
-
-    selectedLocation =
-      currentLocation;
-
-
-    document.getElementById(
-      "selectedLocation"
-    ).innerHTML =
-      `📍 ${currentLocation.lat.toFixed(5)},
-      ${currentLocation.lng.toFixed(5)}`;
-
-
-    openModal();
-
-  }
-
-
-  /* =====================================================
-     PUBLISH
-     ===================================================== */
-
-  async function publishSpot() {
-
-    if (!selectedLocation) {
-
-      showStatus(
-        "📍 Bitte zuerst einen Punkt auf der Karte auswählen."
-      );
-
-      return;
-    }
-
-
-    const name =
-      document
-        .getElementById("spotName")
-        .value
-        .trim();
-
-
-    const description =
-      document
-        .getElementById("spotDescription")
-        .value
-        .trim();
-
-
-    const category =
-      document
-        .getElementById("spotCategory")
-        .value;
-
-
-    const photo =
-      document
-        .getElementById("spotPhoto")
-        .files[0];
-
-
-    if (!name) {
-
-      showStatus(
-        "❌ Gib dem Spot einen Namen."
-      );
-
-      return;
-    }
-
-
-    showStatus(
-      "⏳ Spot wird veröffentlicht..."
-    );
-
-
-    let imageUrl = null;
-
-
-    /* =================================================
-       PHOTO UPLOAD
-       ================================================= */
-
-    if (photo) {
-
-      const fileName =
-        `${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2)}-${photo.name}`;
-
-
-      const { error: uploadError } =
-        await supabaseClient
-          .storage
-          .from("spot-photos")
-          .upload(
-            fileName,
-            photo,
-            {
-              cacheControl: "3600",
-              upsert: false
-            }
+        const description =
+          escapeHTML(
+            spot.description || ""
           );
 
 
-      if (uploadError) {
+        marker.bindPopup(`
+          <div class="spot-title">
+            📍 ${name}
+          </div>
 
-        console.error(uploadError);
+          <div class="spot-category">
+            ${category}
+          </div>
 
-        showStatus(
-          "❌ Foto konnte nicht hochgeladen werden."
-        );
+          <div class="spot-description">
+            ${description}
+          </div>
+
+          <div class="coords">
+            ${Number(spot.latitude).toFixed(5)},
+            ${Number(spot.longitude).toFixed(5)}
+          </div>
+        `);
+
+
+        spotMarkers.push(marker);
+
+      });
+
+    }
+
+
+    /* =========================================
+       SPOT HINZUFÜGEN AKTIVIEREN
+    ========================================= */
+
+    function enableAddSpot() {
+
+      addMode = true;
+
+      selectedLocation = null;
+
+      document.getElementById(
+        "hint"
+      ).style.display = "block";
+
+
+      showStatus(
+        "📍 Klicke jetzt auf einen Punkt auf der Karte"
+      );
+
+    }
+
+
+    /* =========================================
+       AUF KARTE KLICKEN
+    ========================================= */
+
+    map.on("click", async function(event) {
+
+      if (!addMode) {
+        return;
+      }
+
+
+      selectedLocation = event.latlng;
+
+      addMode = false;
+
+
+      document.getElementById(
+        "hint"
+      ).style.display = "none";
+
+
+      /* Name */
+
+      const name = prompt(
+        "📍 Wie heißt der Chillspot?"
+      );
+
+
+      if (!name || name.trim() === "") {
+
+        selectedLocation = null;
 
         return;
       }
 
 
-      const { data: publicData } =
-        supabaseClient
-          .storage
-          .from("spot-photos")
-          .getPublicUrl(fileName);
+      /* Beschreibung */
+
+      const description =
+        prompt(
+          "📝 Beschreibung des Spots?"
+        ) || "";
 
 
-      imageUrl =
-        publicData.publicUrl;
+      /* Kategorie */
 
-    }
-
-
-    /* =================================================
-       DATABASE INSERT
-       ================================================= */
-
-    const insertData = {
-
-      name: name,
-
-      description:
-        description || null,
-
-      category:
-        category,
-
-      latitude:
-        selectedLocation.lat,
-
-      longitude:
-        selectedLocation.lng
-
-    };
+      const category =
+        prompt(
+          "🏷️ Kategorie?\n\nz.B. Park, See, Aussicht, Basketball"
+        ) || "Chillspot";
 
 
-    /*
-      Falls deine spots-Tabelle eine
-      image_url-Spalte besitzt, Foto speichern.
-    */
-
-    if (imageUrl) {
-
-      insertData.image_url =
-        imageUrl;
-
-    }
+      showStatus(
+        "⏳ Speichere Chillspot..."
+      );
 
 
-    const { error } =
-      await supabaseClient
+      /* SUPABASE INSERT */
+
+      const {
+        error
+      } = await supabaseClient
         .from("spots")
-        .insert(insertData);
-
-
-    if (error) {
-
-      console.error(error);
-
-      showStatus(
-        "❌ Fehler beim Speichern des Spots."
-      );
-
-      return;
-    }
-
-
-    /* RESET */
-
-    document.getElementById(
-      "spotName"
-    ).value = "";
-
-
-    document.getElementById(
-      "spotDescription"
-    ).value = "";
-
-
-    document.getElementById(
-      "spotPhoto"
-    ).value = "";
-
-
-    selectedLocation = null;
-
-
-    closeModal();
-
-
-    showStatus(
-      "🎉 Spot veröffentlicht!"
-    );
-
-
-    await loadSpots();
-
-  }
-
-
-  /* =====================================================
-     LIKE SYSTEM
-     ===================================================== */
-
-  async function likeSpot(
-    spotId,
-    button
-  ) {
-
-    const alreadyLiked =
-      localStorage.getItem(
-        "liked_" + spotId
-      );
-
-
-    if (alreadyLiked) {
-
-      showStatus(
-        "❤️ Diesen Spot hast du bereits geliked."
-      );
-
-      return;
-    }
-
-
-    const { error } =
-      await supabaseClient
-        .from("likes")
         .insert({
 
-          spot_id:
-            spotId
+          name:
+            name.trim(),
+
+          description:
+            description.trim(),
+
+          category:
+            category.trim(),
+
+          latitude:
+            selectedLocation.lat,
+
+          longitude:
+            selectedLocation.lng
 
         });
 
 
-    if (error) {
+      if (error) {
 
-      console.error(error);
-
-      showStatus(
-        "❌ Like konnte nicht gespeichert werden."
-      );
-
-      return;
-    }
-
-
-    localStorage.setItem(
-      "liked_" + spotId,
-      "true"
-    );
-
-
-    showStatus(
-      "❤️ Geliked!"
-    );
-
-
-    await updateLikeCount(
-      spotId,
-      button
-    );
-
-  }
-
-
-  async function updateLikeCount(
-    spotId,
-    button
-  ) {
-
-    const { count, error } =
-      await supabaseClient
-        .from("likes")
-        .select("*", {
-          count: "exact",
-          head: true
-        })
-        .eq(
-          "spot_id",
-          spotId
+        console.error(
+          "Fehler beim Speichern:",
+          error
         );
 
+        showStatus(
+          "❌ Fehler beim Speichern"
+        );
 
-    if (error) {
-
-      console.error(error);
-
-      return;
-    }
-
-
-    button.innerText =
-      `❤️ ${count || 0}`;
-
-  }
+        return;
+      }
 
 
-  /* =====================================================
-     STATUS
-     ===================================================== */
-
-  let statusTimeout;
-
-
-  function showStatus(message) {
-
-    const status =
-      document.getElementById(
-        "status"
+      showStatus(
+        "✅ Chillspot veröffentlicht!"
       );
 
 
-    status.innerText =
-      message;
+      selectedLocation = null;
 
 
-    status.style.display =
-      "block";
+      /* Spots neu laden */
+
+      await loadSpots();
+
+    });
 
 
-    clearTimeout(
-      statusTimeout
+    /* =========================================
+       LIVE-STANDORT
+    ========================================= */
+
+    function findMe() {
+
+      if (!navigator.geolocation) {
+
+        showStatus(
+          "❌ Dein Browser unterstützt Standort nicht"
+        );
+
+        return;
+      }
+
+
+      showStatus(
+        "📍 Ermittle deinen Standort..."
+      );
+
+
+      navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+          const lat =
+            position.coords.latitude;
+
+          const lng =
+            position.coords.longitude;
+
+          const accuracy =
+            position.coords.accuracy;
+
+
+          /* Karte zum Standort */
+
+          map.setView(
+            [lat, lng],
+            16
+          );
+
+
+          /* Alten Marker löschen */
+
+          if (userMarker) {
+
+            map.removeLayer(
+              userMarker
+            );
+
+          }
+
+
+          if (accuracyCircle) {
+
+            map.removeLayer(
+              accuracyCircle
+            );
+
+          }
+
+
+          /* Standort Marker */
+
+          userMarker =
+            L.circleMarker(
+              [lat, lng],
+              {
+                radius: 9,
+                color: "#ffffff",
+                weight: 3,
+                fillColor: "#4285f4",
+                fillOpacity: 1
+              }
+            ).addTo(map);
+
+
+          userMarker.bindPopup(
+            "📍 Du bist hier"
+          );
+
+
+          /* Genauigkeitskreis */
+
+          accuracyCircle =
+            L.circle(
+              [lat, lng],
+              {
+                radius: accuracy,
+                color: "#4285f4",
+                fillColor: "#4285f4",
+                fillOpacity: 0.12,
+                weight: 1
+              }
+            ).addTo(map);
+
+
+          showStatus(
+            "📍 Standort gefunden"
+          );
+
+        },
+
+        function(error) {
+
+          console.error(
+            "Standort Fehler:",
+            error
+          );
+
+
+          if (
+            error.code === 1
+          ) {
+
+            showStatus(
+              "❌ Standortzugriff wurde abgelehnt"
+            );
+
+          } else {
+
+            showStatus(
+              "❌ Standort konnte nicht ermittelt werden"
+            );
+
+          }
+
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+
+      );
+
+    }
+
+
+    /* =========================================
+       BUTTONS
+    ========================================= */
+
+    document
+      .getElementById("addButton")
+      .addEventListener(
+        "click",
+        enableAddSpot
+      );
+
+
+    document
+      .getElementById("locationButton")
+      .addEventListener(
+        "click",
+        findMe
+      );
+
+
+    document
+      .getElementById("liveLocationButton")
+      .addEventListener(
+        "click",
+        findMe
+      );
+
+
+    /* =========================================
+       SUCHE
+    ========================================= */
+
+    document
+      .getElementById("search")
+      .addEventListener(
+        "keydown",
+        async function(event) {
+
+          if (event.key !== "Enter") {
+            return;
+          }
+
+
+          const query =
+            event.target.value
+              .trim()
+              .toLowerCase();
+
+
+          if (!query) {
+            return;
+          }
+
+
+          /* Erst vorhandene Spots durchsuchen */
+
+          const {
+            data,
+            error
+          } = await supabaseClient
+            .from("spots")
+            .select("*");
+
+
+          if (error) {
+
+            showStatus(
+              "❌ Suche fehlgeschlagen"
+            );
+
+            return;
+          }
+
+
+          const result =
+            (data || []).find(
+              spot => {
+
+                const name =
+                  String(
+                    spot.name || ""
+                  ).toLowerCase();
+
+                const category =
+                  String(
+                    spot.category || ""
+                  ).toLowerCase();
+
+                const description =
+                  String(
+                    spot.description || ""
+                  ).toLowerCase();
+
+                return (
+                  name.includes(query) ||
+                  category.includes(query) ||
+                  description.includes(query)
+                );
+
+              }
+            );
+
+
+          if (result) {
+
+            map.setView(
+              [
+                result.latitude,
+                result.longitude
+              ],
+              16
+            );
+
+
+            /* passender Marker öffnen */
+
+            spotMarkers.forEach(
+              marker => {
+
+                const position =
+                  marker.getLatLng();
+
+                if (
+                  Math.abs(
+                    position.lat -
+                    Number(result.latitude)
+                  ) < 0.00001 &&
+                  Math.abs(
+                    position.lng -
+                    Number(result.longitude)
+                  ) < 0.00001
+                ) {
+
+                  marker.openPopup();
+
+                }
+
+              }
+            );
+
+
+            return;
+          }
+
+
+          /*
+            Wenn kein Spot gefunden wurde,
+            versuchen wir die Stadt über
+            OpenStreetMap zu finden.
+          */
+
+          try {
+
+            const response =
+              await fetch(
+                "https://nominatim.openstreetmap.org/search?format=json&countrycodes=de&q=" +
+                encodeURIComponent(query)
+              );
+
+
+            const places =
+              await response.json();
+
+
+            if (
+              places.length > 0
+            ) {
+
+              const place =
+                places[0];
+
+
+              map.setView(
+                [
+                  Number(place.lat),
+                  Number(place.lon)
+                ],
+                13
+              );
+
+
+              showStatus(
+                "🔎 " + place.display_name
+              );
+
+            } else {
+
+              showStatus(
+                "❌ Nichts gefunden"
+              );
+
+            }
+
+          } catch (error) {
+
+            console.error(error);
+
+            showStatus(
+              "❌ Suche fehlgeschlagen"
+            );
+
+          }
+
+        }
+      );
+
+
+    /* =========================================
+       SUPABASE REALTIME
+    ========================================= */
+
+    supabaseClient
+      .channel("spots-live")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "spots"
+        },
+        function() {
+
+          console.log(
+            "Spot-Daten geändert"
+          );
+
+          loadSpots();
+
+        }
+      )
+      .subscribe();
+
+
+    /* =========================================
+       START
+    ========================================= */
+
+    loadSpots();
+
+
+    /*
+      Leaflet braucht manchmal einen kleinen
+      Moment, damit die Karte ihre Größe
+      korrekt berechnet.
+    */
+
+    setTimeout(
+      function() {
+        map.invalidateSize();
+      },
+      500
     );
 
 
-    statusTimeout =
-      setTimeout(() => {
-
-        status.style.display =
-          "none";
-
-      }, 3500);
-
-  }
-
-
-  /* =====================================================
-     HTML SECURITY
-     ===================================================== */
-
-  function escapeHTML(value) {
-
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-
-  }
-
-
-  /* =====================================================
-     START
-     ===================================================== */
-
-  loadSpots();
-
-</script>
+  </script>
 
 </body>
 </html>
