@@ -1,1303 +1,1659 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>NRW Chillspots</title>
+<title>NRW Chillspots</title>
 
-  <!-- Leaflet Karte -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+/>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d0d0f;
-      color: white;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0d0d0f;
+  color: white;
+}
 
-    header {
-      padding: 18px;
-      background: #151519;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid #29292f;
-    }
+header {
+  padding: 18px;
+  background: #151519;
+  border-bottom: 1px solid #29292f;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
+h1 {
+  margin: 0;
+  font-size: 25px;
+}
 
-    header p {
-      margin: 5px 0 0;
-      color: #999;
-      font-size: 14px;
-    }
+header p {
+  color: #999;
+  margin: 6px 0 14px;
+}
 
-    .top-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-    }
+.top-buttons {
+  display: flex;
+  gap: 10px;
+}
 
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 15px;
-      cursor: pointer;
-    }
+button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 17px;
+  font-size: 15px;
+  color: white;
+  cursor: pointer;
+}
 
-    .primary {
-      background: #22c55e;
-      color: white;
-    }
+button:active {
+  transform: scale(.97);
+}
 
-    .secondary {
-      background: #24242a;
-      color: white;
-    }
+.primary {
+  background: #22c55e;
+}
 
-    #map {
-      width: 100%;
-      height: 58vh;
-      min-height: 400px;
-    }
+.secondary {
+  background: #24242a;
+}
 
-    .panel {
-      padding: 16px;
-    }
+#accountInfo {
+  color: #aaa;
+  font-size: 13px;
+  margin-top: 10px;
+}
 
-    .search {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #18181c;
-      color: white;
-      outline: none;
-      margin-bottom: 12px;
-    }
+.panel {
+  padding: 16px;
+}
 
-    .spot {
-      background: #17171b;
-      border: 1px solid #29292f;
-      border-radius: 16px;
-      margin-bottom: 12px;
-      overflow: hidden;
-    }
+.search {
+  width: 100%;
+  padding: 15px;
+  border-radius: 13px;
+  border: 1px solid #333;
+  background: #18181c;
+  color: white;
+  font-size: 15px;
+  outline: none;
+}
 
-    .spot img {
-      width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      display: block;
-    }
+#map {
+  width: 100%;
+  height: 55vh;
+  min-height: 380px;
+  background: #222;
+}
 
-    .spot-content {
-      padding: 14px;
-    }
+.spot {
+  background: #17171b;
+  border: 1px solid #29292f;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
 
-    .spot h3 {
-      margin: 0 0 6px;
-    }
+.spot img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  display: block;
+}
 
-    .spot p {
-      color: #aaa;
-      margin: 5px 0;
-    }
+.spot-content {
+  padding: 15px;
+}
 
-    .category {
-      display: inline-block;
-      background: #27272d;
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 12px;
-      color: #bbb;
-      margin-top: 5px;
-    }
+.spot h3 {
+  margin: 0 0 7px;
+}
 
-    .like-btn {
-      margin-top: 12px;
-      background: #24242a;
-      color: white;
-      width: 100%;
-    }
+.spot p {
+  color: #aaa;
+  line-height: 1.4;
+}
 
-    .like-btn.liked {
-      background: #ef4444;
-    }
+.category {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #29292f;
+  color: #bbb;
+  font-size: 12px;
+}
 
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.75);
-      z-index: 5000;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
+.like-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: #29292f;
+}
 
-    .modal.show {
-      display: flex;
-    }
+.like-btn.liked {
+  background: #ef4444;
+}
 
-    .modal-box {
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      overflow-y: auto;
-      background: #17171b;
-      border: 1px solid #303038;
-      border-radius: 20px;
-      padding: 20px;
-    }
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.8);
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
 
-    .modal-box h2 {
-      margin-top: 0;
-    }
+.modal.show {
+  display: flex;
+}
 
-    label {
-      display: block;
-      margin-top: 14px;
-      margin-bottom: 6px;
-      color: #bbb;
-    }
+.modal-box {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #17171b;
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 20px;
+}
 
-    input,
-    textarea,
-    select {
-      width: 100%;
-      padding: 13px;
-      border-radius: 11px;
-      border: 1px solid #333;
-      background: #0f0f12;
-      color: white;
-      outline: none;
-    }
+.modal-box h2 {
+  margin-top: 0;
+}
 
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
+label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  color: #bbb;
+}
 
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 18px;
-    }
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 13px;
+  border-radius: 11px;
+  border: 1px solid #333;
+  background: #0f0f12;
+  color: white;
+  outline: none;
+}
 
-    .modal-actions button {
-      flex: 1;
-    }
+textarea {
+  min-height: 100px;
+}
 
-    .status {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #222229;
-      border: 1px solid #383840;
-      padding: 12px 18px;
-      border-radius: 999px;
-      z-index: 9999;
-      display: none;
-      max-width: 90%;
-      text-align: center;
-    }
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
 
-    .account-info {
-      color: #aaa;
-      font-size: 13px;
-      margin-top: 8px;
-      word-break: break-all;
-    }
+.modal-actions button {
+  flex: 1;
+}
 
-    .empty {
-      text-align: center;
-      padding: 35px 10px;
-      color: #777;
-    }
+.status {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: #222229;
+  border: 1px solid #444;
+  padding: 13px 18px;
+  border-radius: 30px;
+  max-width: 90%;
+  text-align: center;
+}
 
-    .location-btn {
-      margin-top: 10px;
-      width: 100%;
-    }
-  </style>
+.empty {
+  text-align: center;
+  color: #777;
+  padding: 30px;
+}
+
+.close-x {
+  float: right;
+  background: transparent;
+  font-size: 22px;
+  padding: 0;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>📍 NRW Chillspots</h1>
-  <p>finde und teile geile Spots in NRW</p>
 
-  <div class="top-buttons">
-    <button class="primary" onclick="openSpotModal()">
-      ➕ Spot
-    </button>
+<h1>📍 NRW Chillspots</h1>
 
-    <button class="secondary" onclick="openAuthModal()">
-      👤 Account
-    </button>
-  </div>
+<p>finde und teile geile Spots in NRW</p>
 
-  <div id="accountInfo" class="account-info">
-    Nicht eingeloggt
-  </div>
+<div class="top-buttons">
+
+<button
+class="primary"
+onclick="openSpotModal()">
+➕ Spot
+</button>
+
+<button
+class="secondary"
+onclick="openAuthModal()">
+👤 Account
+</button>
+
+</div>
+
+<div id="accountInfo">
+Nicht eingeloggt
+</div>
+
 </header>
 
+
 <div class="panel">
-  <input
-    id="search"
-    class="search"
-    type="text"
-    placeholder="🔎 Stadt oder Spot suchen..."
-    oninput="filterSpots()"
-  >
+
+<input
+id="search"
+class="search"
+placeholder="🔎 Stadt oder Spot suchen..."
+oninput="filterSpots()">
+
 </div>
+
 
 <div id="map"></div>
 
+
 <div class="panel">
-  <h2>🔥 Chillspots</h2>
-  <div id="spotList"></div>
+
+<h2>🔥 Chillspots</h2>
+
+<div id="spotList"></div>
+
 </div>
+
+
 
 <!-- SPOT MODAL -->
 
-<div class="modal" id="spotModal">
-  <div class="modal-box">
+<div
+id="spotModal"
+class="modal">
 
-    <h2>📍 Neuen Chillspot</h2>
+<div class="modal-box">
 
-    <p style="color:#999">
-      Klicke auf der Karte auf den gewünschten Standort
-    </p>
+<button
+class="close-x"
+onclick="closeSpotModal()">
+✕
+</button>
 
-    <label>Name</label>
-    <input
-      id="spotName"
-      type="text"
-      placeholder="z.B. Seepark"
-    >
+<h2>📍 Neuen Chillspot</h2>
 
-    <label>Beschreibung</label>
-    <textarea
-      id="spotDescription"
-      placeholder="Was ist an diesem Spot besonders?"
-    ></textarea>
+<label>Name</label>
 
-    <label>Kategorie</label>
-    <select id="spotCategory">
-      <option value="Park">🌳 Park</option>
-      <option value="See">🌊 See</option>
-      <option value="Sport">⚽ Sport</option>
-      <option value="Aussicht">🌄 Aussicht</option>
-      <option value="Gaming">🎮 Gaming</option>
-      <option value="Sonstiges">📍 Sonstiges</option>
-    </select>
+<input
+id="spotName"
+placeholder="z.B. Seepark">
 
-    <label>Foto</label>
-    <input
-      id="spotPhoto"
-      type="file"
-      accept="image/*"
-    >
 
-    <p id="selectedLocation" style="color:#22c55e">
-      Noch kein Standort ausgewählt
-    </p>
+<label>Beschreibung</label>
 
-    <button
-      class="secondary location-btn"
-      onclick="useMyLocation()"
-    >
-      📍 Meinen Standort verwenden
-    </button>
+<textarea
+id="spotDescription"
+placeholder="Was ist an diesem Spot besonders?"></textarea>
 
-    <div class="modal-actions">
-      <button
-        class="secondary"
-        onclick="closeSpotModal()"
-      >
-        Abbrechen
-      </button>
 
-      <button
-        class="primary"
-        onclick="createSpot()"
-      >
-        Veröffentlichen
-      </button>
-    </div>
+<label>Kategorie</label>
 
-  </div>
+<select id="spotCategory">
+
+<option>Park</option>
+<option>See</option>
+<option>Sport</option>
+<option>Aussicht</option>
+<option>Gaming</option>
+<option>Sonstiges</option>
+
+</select>
+
+
+<label>Foto</label>
+
+<input
+id="spotPhoto"
+type="file"
+accept="image/*">
+
+
+<p
+id="selectedLocation"
+style="color:#22c55e">
+📍 Noch kein Standort ausgewählt
+</p>
+
+
+<button
+class="secondary"
+style="width:100%"
+onclick="useMyLocation()">
+
+📍 Meinen Standort verwenden
+
+</button>
+
+
+<div class="modal-actions">
+
+<button
+class="secondary"
+onclick="closeSpotModal()">
+
+Abbrechen
+
+</button>
+
+<button
+class="primary"
+onclick="createSpot()">
+
+🚀 Veröffentlichen
+
+</button>
+
 </div>
 
-<!-- AUTH MODAL -->
-
-<div class="modal" id="authModal">
-  <div class="modal-box">
-
-    <h2 id="authTitle">👤 Account</h2>
-
-    <label>E-Mail</label>
-    <input
-      id="email"
-      type="email"
-      placeholder="deine@email.de"
-    >
-
-    <label>Passwort</label>
-    <input
-      id="password"
-      type="password"
-      placeholder="Mindestens 6 Zeichen"
-    >
-
-    <div class="modal-actions">
-
-      <button
-        class="secondary"
-        onclick="closeAuthModal()"
-      >
-        Schließen
-      </button>
-
-      <button
-        class="primary"
-        onclick="signUp()"
-      >
-        Registrieren
-      </button>
-
-    </div>
-
-    <button
-      class="secondary"
-      style="width:100%;margin-top:8px"
-      onclick="signIn()"
-    >
-      Einloggen
-    </button>
-
-    <button
-      id="logoutButton"
-      class="secondary"
-      style="width:100%;margin-top:8px;display:none"
-      onclick="logout()"
-    >
-      Ausloggen
-    </button>
-
-  </div>
 </div>
 
-<div id="status" class="status"></div>
+</div>
+
+
+
+<!-- ACCOUNT MODAL -->
+
+<div
+id="authModal"
+class="modal">
+
+<div class="modal-box">
+
+<button
+class="close-x"
+onclick="closeAuthModal()">
+✕
+</button>
+
+<h2>👤 Account</h2>
+
+<label>E-Mail</label>
+
+<input
+id="email"
+type="email"
+placeholder="deine@email.de">
+
+
+<label>Passwort</label>
+
+<input
+id="password"
+type="password"
+placeholder="Mindestens 6 Zeichen">
+
+
+<div class="modal-actions">
+
+<button
+class="secondary"
+onclick="closeAuthModal()">
+
+Schließen
+
+</button>
+
+<button
+class="primary"
+onclick="signUp()">
+
+Registrieren
+
+</button>
+
+</div>
+
+
+<button
+class="secondary"
+style="width:100%;margin-top:8px"
+onclick="signIn()">
+
+🔑 Einloggen
+
+</button>
+
+
+<button
+id="logoutButton"
+class="secondary"
+style="display:none;width:100%;margin-top:8px"
+onclick="logout()">
+
+🚪 Ausloggen
+
+</button>
+
+</div>
+
+</div>
+
+
+<div
+id="status"
+class="status">
+</div>
+
+
 
 <!-- LEAFLET -->
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script
+src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
 
 <!-- SUPABASE -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script
+src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+
 
 <script>
 
+/* =========================
+   SUPABASE
+========================= */
+
 const SUPABASE_URL =
-  "https://ayukjqhmmgqbgtiusvsx.supabase.co";
+"https://ayukjqhmmgqbgtiusvsx.supabase.co";
 
 const SUPABASE_KEY =
-  "sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
+"sb_publishable_oN4MVoqoeGLRPtEEgIpalQ_H_GZk1u0";
 
 const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-// ===============================
-// KARTE
-// ===============================
-
-const map = L.map("map").setView(
-  [51.48, 7.22],
-  10
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
 );
 
-L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    attribution:
-      '&copy; OpenStreetMap contributors'
-  }
-).addTo(map);
+
+
+/* =========================
+   STATUS
+========================= */
+
+function showStatus(message) {
+
+const status =
+document.getElementById("status");
+
+status.textContent = message;
+
+status.style.display = "block";
+
+setTimeout(() => {
+
+status.style.display = "none";
+
+}, 3500);
+
+}
+
+
+
+/* =========================
+   KARTE
+========================= */
+
+let map;
 
 let selectedLat = null;
 let selectedLng = null;
-
 let selectedMarker = null;
+
+let markers = [];
 
 let spots = [];
 
 
-// Klick auf Karte
+function initMap() {
+
+map = L.map("map").setView(
+[51.48, 7.22],
+10
+);
+
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+attribution:
+"&copy; OpenStreetMap contributors",
+maxZoom: 19
+}
+).addTo(map);
+
 
 map.on("click", function(e) {
 
-  selectedLat = e.latlng.lat;
-  selectedLng = e.latlng.lng;
+selectedLat =
+e.latlng.lat;
 
-  if (selectedMarker) {
-    map.removeLayer(selectedMarker);
-  }
+selectedLng =
+e.latlng.lng;
 
-  selectedMarker = L.marker([
-    selectedLat,
-    selectedLng
-  ]).addTo(map);
 
-  document.getElementById(
-    "selectedLocation"
-  ).textContent =
-    `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+if (selectedMarker) {
+
+map.removeLayer(
+selectedMarker
+);
+
+}
+
+
+selectedMarker =
+L.marker([
+selectedLat,
+selectedLng
+]).addTo(map);
+
+
+document.getElementById(
+"selectedLocation"
+).textContent =
+"📍 " +
+selectedLat.toFixed(5) +
+", " +
+selectedLng.toFixed(5);
 
 });
 
-
-// ===============================
-// STATUS
-// ===============================
-
-function showStatus(message) {
-
-  const el =
-    document.getElementById("status");
-
-  el.textContent = message;
-
-  el.style.display = "block";
-
-  setTimeout(() => {
-    el.style.display = "none";
-  }, 3000);
 }
 
 
-// ===============================
-// ACCOUNT
-// ===============================
 
-async function signUp() {
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  if (!email || !password) {
-    showStatus("❌ E-Mail und Passwort eingeben");
-    return;
-  }
-
-  if (password.length < 6) {
-    showStatus("❌ Passwort muss mindestens 6 Zeichen haben");
-    return;
-  }
-
-  const { error } =
-    await supabaseClient.auth.signUp({
-      email,
-      password
-    });
-
-  if (error) {
-    showStatus("❌ " + error.message);
-    return;
-  }
-
-  showStatus(
-    "✅ Account erstellt! Prüfe ggf. deine E-Mail."
-  );
-}
-
-
-async function signIn() {
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const { error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-  if (error) {
-    showStatus("❌ " + error.message);
-    return;
-  }
-
-  showStatus("✅ Eingeloggt");
-
-  closeAuthModal();
-
-  updateAccountUI();
-}
-
-
-async function logout() {
-
-  await supabaseClient.auth.signOut();
-
-  showStatus("👋 Ausgeloggt");
-
-  updateAccountUI();
-}
-
-
-async function updateAccountUI() {
-
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
-
-  const info =
-    document.getElementById("accountInfo");
-
-  const logoutButton =
-    document.getElementById("logoutButton");
-
-  if (user) {
-
-    info.textContent =
-      "👤 " + user.email;
-
-    logoutButton.style.display =
-      "block";
-
-  } else {
-
-    info.textContent =
-      "Nicht eingeloggt";
-
-    logoutButton.style.display =
-      "none";
-  }
-}
-
-
-// ===============================
-// SPOT MODAL
-// ===============================
-
-function openSpotModal() {
-
-  document
-    .getElementById("spotModal")
-    .classList.add("show");
-}
-
-
-function closeSpotModal() {
-
-  document
-    .getElementById("spotModal")
-    .classList.remove("show");
-}
-
-
-// ===============================
-// AUTH MODAL
-// ===============================
+/* =========================
+   ACCOUNT
+========================= */
 
 function openAuthModal() {
 
-  document
-    .getElementById("authModal")
-    .classList.add("show");
+document
+.getElementById("authModal")
+.classList.add("show");
 
-  updateAccountUI();
+updateAccountUI();
+
 }
 
 
 function closeAuthModal() {
 
-  document
-    .getElementById("authModal")
-    .classList.remove("show");
-}
-
-
-// ===============================
-// MEIN STANDORT
-// ===============================
-
-function useMyLocation() {
-
-  if (!navigator.geolocation) {
-
-    showStatus(
-      "❌ Standort wird nicht unterstützt"
-    );
-
-    return;
-  }
-
-  showStatus("📍 Standort wird gesucht...");
-
-  navigator.geolocation.getCurrentPosition(
-
-    function(position) {
-
-      selectedLat =
-        position.coords.latitude;
-
-      selectedLng =
-        position.coords.longitude;
-
-      map.setView(
-        [selectedLat, selectedLng],
-        15
-      );
-
-      if (selectedMarker) {
-        map.removeLayer(selectedMarker);
-      }
-
-      selectedMarker =
-        L.marker([
-          selectedLat,
-          selectedLng
-        ])
-        .addTo(map);
-
-      document.getElementById(
-        "selectedLocation"
-      ).textContent =
-        `📍 Dein Standort`;
-
-    },
-
-    function() {
-
-      showStatus(
-        "❌ Standort konnte nicht abgerufen werden"
-      );
-
-    }
-
-  );
-}
-
-
-// ===============================
-// SPOT ERSTELLEN
-// ===============================
-
-async function createSpot() {
-
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-
-    showStatus(
-      "❌ Du musst zuerst einen Account erstellen"
-    );
-
-    return;
-  }
-
-  const name =
-    document
-      .getElementById("spotName")
-      .value
-      .trim();
-
-  const description =
-    document
-      .getElementById("spotDescription")
-      .value
-      .trim();
-
-  const category =
-    document
-      .getElementById("spotCategory")
-      .value;
-
-  const photoInput =
-    document.getElementById("spotPhoto");
-
-  const photoFile =
-    photoInput.files[0];
-
-
-  if (!name) {
-
-    showStatus(
-      "❌ Gib einen Namen ein"
-    );
-
-    return;
-  }
-
-
-  if (
-    selectedLat === null ||
-    selectedLng === null
-  ) {
-
-    showStatus(
-      "❌ Wähle zuerst einen Standort auf der Karte"
-    );
-
-    return;
-  }
-
-
-  showStatus("⏳ Spot wird erstellt...");
-
-
-  let photoUrl = null;
-
-
-  // =========================
-  // FOTO HOCHLADEN
-  // =========================
-
-  if (photoFile) {
-
-    const extension =
-      photoFile.name
-        .split(".")
-        .pop();
-
-    const fileName =
-      `${user.id}/${Date.now()}.${extension}`;
-
-
-    const {
-      error: uploadError
-    } =
-      await supabaseClient
-        .storage
-        .from("spot-photos")
-        .upload(
-          fileName,
-          photoFile,
-          {
-            cacheControl: "3600",
-            upsert: false
-          }
-        );
-
-
-    if (uploadError) {
-
-      showStatus(
-        "❌ Foto konnte nicht hochgeladen werden: " +
-        uploadError.message
-      );
-
-      return;
-    }
-
-
-    const {
-      data: publicData
-    } =
-      supabaseClient
-        .storage
-        .from("spot-photos")
-        .getPublicUrl(fileName);
-
-
-    photoUrl =
-      publicData.publicUrl;
-  }
-
-
-  // =========================
-  // SPOT IN DB
-  // =========================
-
-  const {
-    data: newSpot,
-    error
-  } =
-    await supabaseClient
-      .from("spots")
-      .insert({
-
-        name: name,
-
-        description:
-          description,
-
-        category:
-          category,
-
-        latitude:
-          selectedLat,
-
-        longitude:
-          selectedLng,
-
-        user_id:
-          user.id
-
-      })
-      .select()
-      .single();
-
-
-  if (error) {
-
-    showStatus(
-      "❌ " + error.message
-    );
-
-    return;
-  }
-
-
-  // =========================
-  // FOTO ZUM SPOT
-  // =========================
-
-  if (photoUrl && newSpot) {
-
-    await supabaseClient
-      .from("spot_photos")
-      .insert({
-
-        spot_id:
-          newSpot.id,
-
-        image_url:
-          photoUrl,
-
-        user_id:
-          user.id
-
-      });
-
-  }
-
-
-  showStatus(
-    "✅ Spot veröffentlicht!"
-  );
-
-
-  document.getElementById(
-    "spotName"
-  ).value = "";
-
-  document.getElementById(
-    "spotDescription"
-  ).value = "";
-
-  document.getElementById(
-    "spotPhoto"
-  ).value = "";
-
-
-  closeSpotModal();
-
-
-  await loadSpots();
-}
-
-
-// ===============================
-// SPOTS LADEN
-// ===============================
-
-async function loadSpots() {
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("spots")
-      .select("*")
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-
-  if (error) {
-
-    console.error(error);
-
-    showStatus(
-      "❌ Spots konnten nicht geladen werden"
-    );
-
-    return;
-  }
-
-
-  spots = data || [];
-
-  renderSpots();
-  renderMarkers();
-}
-
-
-// ===============================
-// MARKER
-// ===============================
-
-let markers = [];
-
-
-function renderMarkers() {
-
-  markers.forEach(marker => {
-    map.removeLayer(marker);
-  });
-
-  markers = [];
-
-
-  spots.forEach(spot => {
-
-    if (
-      spot.latitude === null ||
-      spot.longitude === null
-    ) {
-      return;
-    }
-
-
-    const marker =
-      L.marker([
-        spot.latitude,
-        spot.longitude
-      ]).addTo(map);
-
-
-    marker.bindPopup(`
-      <strong>${escapeHtml(spot.name)}</strong>
-      <br>
-      ${escapeHtml(spot.category || "")}
-    `);
-
-
-    markers.push(marker);
-
-  });
+document
+.getElementById("authModal")
+.classList.remove("show");
 
 }
 
 
-// ===============================
-// SPOT LISTE
-// ===============================
+async function signUp() {
 
-async function renderSpots() {
+const email =
+document.getElementById("email")
+.value
+.trim();
 
-  const container =
-    document.getElementById("spotList");
+const password =
+document.getElementById("password")
+.value;
 
-  if (!spots.length) {
 
-    container.innerHTML = `
-      <div class="empty">
-        Noch keine Spots 😭<br>
-        Sei der Erste!
-      </div>
-    `;
+if (!email || !password) {
 
-    return;
-  }
-
-
-  container.innerHTML = "";
-
-
-  for (const spot of spots) {
-
-    let imageUrl = null;
-
-
-    const {
-      data: photos
-    } =
-      await supabaseClient
-        .from("spot_photos")
-        .select("image_url")
-        .eq(
-          "spot_id",
-          spot.id
-        )
-        .limit(1);
-
-
-    if (
-      photos &&
-      photos.length
-    ) {
-
-      imageUrl =
-        photos[0].image_url;
-
-    }
-
-
-    const div =
-      document.createElement("div");
-
-    div.className = "spot";
-
-
-    div.innerHTML = `
-
-      ${
-        imageUrl
-          ? `<img src="${escapeHtml(imageUrl)}" alt="Spot Foto">`
-          : ""
-      }
-
-      <div class="spot-content">
-
-        <h3>
-          📍 ${escapeHtml(spot.name)}
-        </h3>
-
-        <span class="category">
-          ${escapeHtml(spot.category || "Sonstiges")}
-        </span>
-
-        <p>
-          ${escapeHtml(
-            spot.description || "Keine Beschreibung"
-          )}
-        </p>
-
-        <button
-          class="like-btn"
-          onclick="likeSpot('${spot.id}', this)"
-        >
-          ❤️ Like
-        </button>
-
-      </div>
-    `;
-
-
-    container.appendChild(div);
-
-  }
-
-}
-
-
-// ===============================
-// LIKE
-// ===============================
-
-async function likeSpot(
-  spotId,
-  button
-) {
-
-  const {
-    data: { user }
-  } =
-    await supabaseClient.auth.getUser();
-
-
-  if (!user) {
-
-    showStatus(
-      "❌ Du musst eingeloggt sein"
-    );
-
-    return;
-  }
-
-
-  const {
-    data: existing
-  } =
-    await supabaseClient
-      .from("likes")
-      .select("id")
-      .eq(
-        "spot_id",
-        spotId
-      )
-      .eq(
-        "user_id",
-        user.id
-      )
-      .maybeSingle();
-
-
-  if (existing) {
-
-    await supabaseClient
-      .from("likes")
-      .delete()
-      .eq(
-        "id",
-        existing.id
-      );
-
-    button.classList.remove("liked");
-
-    button.textContent =
-      "❤️ Like";
-
-    showStatus(
-      "💔 Like entfernt"
-    );
-
-  } else {
-
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("likes")
-        .insert({
-
-          spot_id:
-            spotId,
-
-          user_id:
-            user.id
-
-        });
-
-
-    if (error) {
-
-      showStatus(
-        "❌ " + error.message
-      );
-
-      return;
-    }
-
-
-    button.classList.add("liked");
-
-    button.textContent =
-      "❤️ Geliked";
-
-    showStatus(
-      "❤️ Like!"
-    );
-
-  }
-
-}
-
-
-// ===============================
-// SUCHE
-// ===============================
-
-function filterSpots() {
-
-  const query =
-    document
-      .getElementById("search")
-      .value
-      .toLowerCase()
-      .trim();
-
-
-  document
-    .querySelectorAll(".spot")
-    .forEach((element, index) => {
-
-      const spot =
-        spots[index];
-
-      if (!spot) return;
-
-
-      const text =
-        `${spot.name} ${spot.description} ${spot.category}`
-          .toLowerCase();
-
-
-      element.style.display =
-        text.includes(query)
-          ? "block"
-          : "none";
-
-    });
-
-}
-
-
-// ===============================
-// HTML SICHER MACHEN
-// ===============================
-
-function escapeHtml(value) {
-
-  if (value === null ||
-      value === undefined) {
-    return "";
-  }
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-// ===============================
-// AUTH STATUS
-// ===============================
-
-supabaseClient.auth.onAuthStateChange(
-  function() {
-
-    updateAccountUI();
-
-  }
+showStatus(
+"❌ E-Mail und Passwort eingeben"
 );
 
+return;
 
-// ===============================
-// START
-// ===============================
+}
+
+
+if (password.length < 6) {
+
+showStatus(
+"❌ Passwort muss mindestens 6 Zeichen haben"
+);
+
+return;
+
+}
+
+
+showStatus("⏳ Account wird erstellt...");
+
+
+const {
+data,
+error
+} =
+await supabaseClient.auth.signUp({
+
+email: email,
+
+password: password
+
+});
+
+
+if (error) {
+
+showStatus(
+"❌ " + error.message
+);
+
+return;
+
+}
+
+
+if (data.user) {
+
+showStatus(
+"✅ Account erstellt!"
+);
+
+}
+
 
 updateAccountUI();
 
-loadSpots()
+}
+
+
+
+async function signIn() {
+
+const email =
+document.getElementById("email")
+.value
+.trim();
+
+const password =
+document.getElementById("password")
+.value;
+
+
+if (!email || !password) {
+
+showStatus(
+"❌ Bitte alles ausfüllen"
+);
+
+return;
+
+}
+
+
+showStatus("⏳ Einloggen...");
+
+
+const {
+error
+} =
+await supabaseClient.auth.signInWithPassword({
+
+email: email,
+
+password: password
+
+});
+
+
+if (error) {
+
+showStatus(
+"❌ " + error.message
+);
+
+return;
+
+}
+
+
+showStatus(
+"✅ Erfolgreich eingeloggt!"
+);
+
+closeAuthModal();
+
+updateAccountUI();
+
+loadSpots();
+
+}
+
+
+
+async function logout() {
+
+await supabaseClient.auth.signOut();
+
+showStatus(
+"👋 Ausgeloggt"
+);
+
+updateAccountUI();
+
+}
+
+
+
+async function updateAccountUI() {
+
+const {
+data: {
+user
+}
+} =
+await supabaseClient.auth.getUser();
+
+
+const info =
+document.getElementById(
+"accountInfo"
+);
+
+const logoutButton =
+document.getElementById(
+"logoutButton"
+);
+
+
+if (user) {
+
+info.textContent =
+"👤 " + user.email;
+
+logoutButton.style.display =
+"block";
+
+} else {
+
+info.textContent =
+"Nicht eingeloggt";
+
+logoutButton.style.display =
+"none";
+
+}
+
+}
+
+
+
+/* =========================
+   SPOT MODAL
+========================= */
+
+function openSpotModal() {
+
+document
+.getElementById("spotModal")
+.classList.add("show");
+
+}
+
+
+function closeSpotModal() {
+
+document
+.getElementById("spotModal")
+.classList.remove("show");
+
+}
+
+
+
+/* =========================
+   STANDORT
+========================= */
+
+function useMyLocation() {
+
+if (!navigator.geolocation) {
+
+showStatus(
+"❌ Standort wird nicht unterstützt"
+);
+
+return;
+
+}
+
+
+showStatus(
+"📍 Standort wird gesucht..."
+);
+
+
+navigator.geolocation.getCurrentPosition(
+
+function(position) {
+
+selectedLat =
+position.coords.latitude;
+
+selectedLng =
+position.coords.longitude;
+
+
+map.setView(
+[
+selectedLat,
+selectedLng
+],
+15
+);
+
+
+if (selectedMarker) {
+
+map.removeLayer(
+selectedMarker
+);
+
+}
+
+
+selectedMarker =
+L.marker([
+selectedLat,
+selectedLng
+])
+.addTo(map);
+
+
+document.getElementById(
+"selectedLocation"
+).textContent =
+"📍 Dein Standort";
+
+},
+
+function(error) {
+
+console.error(error);
+
+showStatus(
+"❌ Standort konnte nicht abgerufen werden"
+);
+
+}
+
+);
+
+}
+
+
+
+/* =========================
+   SPOT ERSTELLEN
+========================= */
+
+async function createSpot() {
+
+const {
+data: {
+user
+}
+} =
+await supabaseClient.auth.getUser();
+
+
+if (!user) {
+
+showStatus(
+"❌ Du musst zuerst einen Account erstellen"
+);
+
+openAuthModal();
+
+return;
+
+}
+
+
+const name =
+document.getElementById(
+"spotName"
+).value.trim();
+
+
+const description =
+document.getElementById(
+"spotDescription"
+).value.trim();
+
+
+const category =
+document.getElementById(
+"spotCategory"
+).value;
+
+
+const photoInput =
+document.getElementById(
+"spotPhoto"
+);
+
+const photoFile =
+photoInput.files[0];
+
+
+if (!name) {
+
+showStatus(
+"❌ Gib einen Namen ein"
+);
+
+return;
+
+}
+
+
+if (
+selectedLat === null ||
+selectedLng === null
+) {
+
+showStatus(
+"❌ Wähle einen Standort auf der Karte"
+);
+
+return;
+
+}
+
+
+showStatus(
+"⏳ Spot wird veröffentlicht..."
+);
+
+
+let photoUrl = null;
+
+
+
+/* FOTO */
+
+if (photoFile) {
+
+const extension =
+photoFile.name
+.split(".")
+.pop()
+.toLowerCase();
+
+
+const fileName =
+user.id +
+"/" +
+Date.now() +
+"." +
+extension;
+
+
+const {
+error:
+uploadError
+} =
+await supabaseClient
+.storage
+.from("spot-photos")
+.upload(
+fileName,
+photoFile,
+{
+upsert: false
+}
+);
+
+
+if (uploadError) {
+
+showStatus(
+"❌ Foto-Upload: " +
+uploadError.message
+);
+
+return;
+
+}
+
+
+const {
+data:
+publicData
+} =
+supabaseClient
+.storage
+.from("spot-photos")
+.getPublicUrl(
+fileName
+);
+
+
+photoUrl =
+publicData.publicUrl;
+
+}
+
+
+
+/* SPOT */
+
+const {
+data:
+newSpot,
+error
+} =
+await supabaseClient
+.from("spots")
+.insert({
+
+name: name,
+
+description: description,
+
+category: category,
+
+latitude: selectedLat,
+
+longitude: selectedLng,
+
+user_id: user.id
+
+})
+.select()
+.single();
+
+
+if (error) {
+
+showStatus(
+"❌ " + error.message
+);
+
+return;
+
+}
+
+
+
+/* FOTO ZUORDNEN */
+
+if (photoUrl) {
+
+const {
+error:
+photoError
+} =
+await supabaseClient
+.from("spot_photos")
+.insert({
+
+spot_id:
+newSpot.id,
+
+image_url:
+photoUrl,
+
+user_id:
+user.id
+
+});
+
+
+if (photoError) {
+
+console.error(
+photoError
+);
+
+}
+
+}
+
+
+showStatus(
+"✅ Spot veröffentlicht!"
+);
+
+
+document.getElementById(
+"spotName"
+).value = "";
+
+document.getElementById(
+"spotDescription"
+).value = "";
+
+document.getElementById(
+"spotPhoto"
+).value = "";
+
+
+closeSpotModal();
+
+
+await loadSpots();
+
+}
+
+
+
+/* =========================
+   SPOTS LADEN
+========================= */
+
+async function loadSpots() {
+
+const {
+data,
+error
+} =
+await supabaseClient
+.from("spots")
+.select("*")
+.order(
+"created_at",
+{
+ascending: false
+}
+);
+
+
+if (error) {
+
+console.error(error);
+
+showStatus(
+"❌ Spots konnten nicht geladen werden"
+);
+
+return;
+
+}
+
+
+spots =
+data || [];
+
+
+renderMarkers();
+
+renderSpots();
+
+}
+
+
+
+/* =========================
+   MARKER
+========================= */
+
+function renderMarkers() {
+
+markers.forEach(
+marker =>
+map.removeLayer(marker)
+);
+
+markers = [];
+
+
+spots.forEach(
+spot => {
+
+if (
+spot.latitude === null ||
+spot.longitude === null
+) return;
+
+
+const marker =
+L.marker([
+spot.latitude,
+spot.longitude
+])
+.addTo(map);
+
+
+marker.bindPopup(
+"<b>" +
+escapeHtml(spot.name) +
+"</b><br>" +
+escapeHtml(
+spot.category || ""
+)
+);
+
+
+markers.push(marker);
+
+}
+);
+
+}
+
+
+
+/* =========================
+   SPOT LISTE
+========================= */
+
+async function renderSpots() {
+
+const container =
+document.getElementById(
+"spotList"
+);
+
+
+if (!spots.length) {
+
+container.innerHTML = `
+<div class="empty">
+Noch keine Spots 😭<br>
+Sei der Erste!
+</div>
+`;
+
+return;
+
+}
+
+
+container.innerHTML = "";
+
+
+for (
+const spot of spots
+) {
+
+
+let imageUrl = null;
+
+
+const {
+data: photos
+} =
+await supabaseClient
+.from("spot_photos")
+.select("image_url")
+.eq(
+"spot_id",
+spot.id
+)
+.limit(1);
+
+
+if (
+photos &&
+photos.length > 0
+) {
+
+imageUrl =
+photos[0].image_url;
+
+}
+
+
+const div =
+document.createElement("div");
+
+div.className =
+"spot";
+
+
+div.innerHTML = `
+
+${
+imageUrl
+?
+`
+<img
+src="${escapeHtml(imageUrl)}"
+alt="Spot Foto">
+`
+:
+""
+}
+
+<div class="spot-content">
+
+<h3>
+📍 ${escapeHtml(spot.name)}
+</h3>
+
+<span class="category">
+${escapeHtml(
+spot.category || "Sonstiges"
+)}
+</span>
+
+<p>
+${escapeHtml(
+spot.description ||
+"Keine Beschreibung"
+)}
+</p>
+
+<button
+class="like-btn"
+onclick="likeSpot('${spot.id}', this)">
+
+❤️ Like
+
+</button>
+
+</div>
+`;
+
+
+container.appendChild(div);
+
+}
+
+}
+
+
+
+/* =========================
+   LIKE
+========================= */
+
+async function likeSpot(
+spotId,
+button
+) {
+
+const {
+data: {
+user
+}
+} =
+await supabaseClient.auth.getUser();
+
+
+if (!user) {
+
+showStatus(
+"❌ Du musst eingeloggt sein"
+);
+
+openAuthModal();
+
+return;
+
+}
+
+
+const {
+data: existing,
+error:
+checkError
+} =
+await supabaseClient
+.from("likes")
+.select("id")
+.eq(
+"spot_id",
+spotId
+)
+.eq(
+"user_id",
+user.id
+)
+.maybeSingle();
+
+
+if (checkError) {
+
+showStatus(
+"❌ " +
+checkError.message
+);
+
+return;
+
+}
+
+
+if (existing) {
+
+
+const {
+error
+} =
+await supabaseClient
+.from("likes")
+.delete()
+.eq(
+"id",
+existing.id
+);
+
+
+if (error) {
+
+showStatus(
+"❌ " +
+error.message
+);
+
+return;
+
+}
+
+
+button.classList.remove(
+"liked"
+);
+
+button.textContent =
+"❤️ Like";
+
+showStatus(
+"💔 Like entfernt"
+);
+
+
+} else {
+
+
+const {
+error
+} =
+await supabaseClient
+.from("likes")
+.insert({
+
+spot_id:
+spotId,
+
+user_id:
+user.id
+
+});
+
+
+if (error) {
+
+showStatus(
+"❌ " +
+error.message
+);
+
+return;
+
+}
+
+
+button.classList.add(
+"liked"
+);
+
+button.textContent =
+"❤️ Geliked";
+
+showStatus(
+"❤️ Geliked!"
+);
+
+}
+
+}
+
+
+
+/* =========================
+   SUCHE
+========================= */
+
+function filterSpots() {
+
+const query =
+document.getElementById(
+"search"
+).value
+.toLowerCase()
+.trim();
+
+
+document
+.querySelectorAll(".spot")
+.forEach(
+element => {
+
+const text =
+element.textContent
+.toLowerCase();
+
+
+element.style.display =
+text.includes(query)
+?
+"block"
+:
+"none";
+
+}
+);
+
+}
+
+
+
+/* =========================
+   HTML SICHERHEIT
+========================= */
+
+function escapeHtml(value) {
+
+if (
+value === null ||
+value === undefined
+) {
+
+return "";
+
+}
+
+
+return String(value)
+.replaceAll("&", "&amp;")
+.replaceAll("<", "&lt;")
+.replaceAll(">", "&gt;")
+.replaceAll('"', "&quot;")
+.replaceAll("'", "&#039;");
+
+}
+
+
+
+/* =========================
+   AUTH EVENTS
+========================= */
+
+supabaseClient.auth.onAuthStateChange(
+function() {
+
+updateAccountUI();
+
+}
+);
+
+
+
+/* =========================
+   START
+========================= */
+
+window.addEventListener(
+"load",
+async function() {
+
+try {
+
+initMap();
+
+await updateAccountUI();
+
+await loadSpots();
+
+} catch (error) {
+
+console.error(error);
+
+showStatus(
+"❌ Fehler: " +
+error.message
+);
+
+}
+
+}
+);
+
+</script>
+
+</body>
+</html>
