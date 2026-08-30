@@ -1,260 +1,149 @@
-// ======================================================
-// NRW CHILLSPOTS - PROFILES.JS
-// Profile + Nicknames
-// ======================================================
+// ===============================
+// PROFILE
+// ===============================
 
-const Profiles = {
+async function loadProfilePage() {
 
-  // ----------------------------------------------------
-  // PROFIL DES AKTUELLEN USERS LADEN
-  // ----------------------------------------------------
-  async getMyProfile() {
-
-    const user = await Auth.getUser();
-
-    if (!user) {
-      return null;
+  const {
+    data: {
+      user
     }
-
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Profil konnte nicht geladen werden:", error);
-      return null;
-    }
-
-    return data;
-  },
+  } =
+    await supabaseClient.auth.getUser();
 
 
-  // ----------------------------------------------------
-  // PROFIL EINES USERS LADEN
-  // ----------------------------------------------------
-  async getProfile(userId) {
+  if (!user) {
 
-    if (!userId) {
-      return null;
-    }
+    window.location.href =
+      "../index.html";
 
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .select("id, nickname, avatar_url, created_at")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Profil konnte nicht geladen werden:", error);
-      return null;
-    }
-
-    return data;
-  },
-
-
-  // ----------------------------------------------------
-  // NICKNAME SPEICHERN
-  // ----------------------------------------------------
-  async saveNickname(nickname) {
-
-    const user = await Auth.getUser();
-
-    if (!user) {
-      showStatus("❌ Du musst eingeloggt sein");
-      return false;
-    }
-
-    nickname = String(nickname || "").trim();
-
-    if (!nickname) {
-      showStatus("❌ Gib einen Nickname ein");
-      return false;
-    }
-
-    if (nickname.length < 3) {
-      showStatus("❌ Der Nickname muss mindestens 3 Zeichen haben");
-      return false;
-    }
-
-    if (nickname.length > 20) {
-      showStatus("❌ Der Nickname darf maximal 20 Zeichen haben");
-      return false;
-    }
-
-    // Nur normale Zeichen erlauben
-    if (!/^[a-zA-Z0-9_]+$/.test(nickname)) {
-      showStatus(
-        "❌ Verwende nur Buchstaben, Zahlen und _"
-      );
-      return false;
-    }
-
-    showStatus("⏳ Nickname wird gespeichert...");
-
-    // Prüfen, ob Nickname bereits vergeben ist
-    const {
-      data: existing,
-      error: checkError
-    } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .ilike("nickname", nickname)
-      .neq("id", user.id)
-      .maybeSingle();
-
-    if (checkError) {
-      console.error(checkError);
-      showStatus("❌ Nickname konnte nicht geprüft werden");
-      return false;
-    }
-
-    if (existing) {
-      showStatus("❌ Dieser Nickname ist bereits vergeben");
-      return false;
-    }
-
-    // Profil erstellen oder aktualisieren
-    const {
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        nickname: nickname
-      });
-
-    if (error) {
-      console.error("Nickname speichern:", error);
-      showStatus("❌ " + error.message);
-      return false;
-    }
-
-    showStatus("✅ Nickname gespeichert!");
-
-    await this.updateUI();
-
-    return true;
-  },
-
-
-  // ----------------------------------------------------
-  // PROFIL UI AKTUALISIEREN
-  // ----------------------------------------------------
-  async updateUI() {
-
-    const profile =
-      await this.getMyProfile();
-
-    const nicknameElement =
-      document.getElementById("currentNickname");
-
-    const accountInfo =
-      document.getElementById("accountInfo");
-
-    if (!profile) {
-
-      if (nicknameElement) {
-        nicknameElement.textContent =
-          "Noch kein Nickname";
-      }
-
-      return;
-    }
-
-    const nickname =
-      profile.nickname || "Noch kein Nickname";
-
-    if (nicknameElement) {
-      nicknameElement.textContent =
-        nickname;
-    }
-
-    if (accountInfo) {
-
-      const user =
-        await Auth.getUser();
-
-      if (user) {
-
-        accountInfo.textContent =
-          "👤 @" + nickname;
-
-      }
-    }
-  },
-
-
-  // ----------------------------------------------------
-  // NICKNAME VON USER ID
-  // ----------------------------------------------------
-  async getNickname(userId) {
-
-    const profile =
-      await this.getProfile(userId);
-
-    if (!profile) {
-      return "Unbekannt";
-    }
-
-    return profile.nickname ||
-      "Unbekannt";
+    return;
   }
-};
 
 
-// ======================================================
-// KOMPATIBILITÄTS-FUNKTIONEN
-// ======================================================
+  const email =
+    document.getElementById(
+      "profileEmail"
+    );
 
-async function loadProfile() {
-  return await Profiles.updateUI();
+  if (email) {
+    email.textContent =
+      user.email;
+  }
+
+
+  const {
+    data: profile
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "nickname,username"
+      )
+      .eq(
+        "id",
+        user.id
+      )
+      .maybeSingle();
+
+
+  const nickname =
+    document.getElementById(
+      "nickname"
+    );
+
+
+  if (nickname) {
+
+    nickname.value =
+      profile?.nickname ||
+      profile?.username ||
+      "";
+
+  }
+
 }
 
 
-async function saveNickname() {
+
+// ===============================
+// SPEICHERN
+// ===============================
+
+async function saveProfile() {
+
+  const {
+    data: {
+      user
+    }
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (!user) {
+
+    showStatus(
+      "❌ Nicht eingeloggt"
+    );
+
+    return;
+  }
+
 
   const input =
-    document.getElementById("nickname");
+    document.getElementById(
+      "nickname"
+    );
 
-  if (!input) {
-    showStatus("❌ Nickname-Feld nicht gefunden");
-    return false;
+
+  const nickname =
+    input.value.trim();
+
+
+  if (
+    nickname.length < 2 ||
+    nickname.length > 30
+  ) {
+
+    showStatus(
+      "❌ Nickname muss 2–30 Zeichen haben"
+    );
+
+    return;
   }
 
-  return await Profiles.saveNickname(
-    input.value
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("profiles")
+      .update({
+        nickname
+      })
+      .eq(
+        "id",
+        user.id
+      );
+
+
+  if (error) {
+
+    console.error(
+      "PROFILE:",
+      error
+    );
+
+    showStatus(
+      "❌ " + error.message
+    );
+
+    return;
+  }
+
+
+  showStatus(
+    "✅ Nickname gespeichert!"
   );
+
 }
-
-
-async function getNickname(userId) {
-  return await Profiles.getNickname(userId);
-}
-
-
-// ======================================================
-// START
-// ======================================================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  async function() {
-
-    const user =
-      await Auth.getUser();
-
-    if (user) {
-      await Profiles.updateUI();
-    }
-
-  }
-);
