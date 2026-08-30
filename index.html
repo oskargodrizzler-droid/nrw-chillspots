@@ -1,50 +1,77 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>NRW Chillspots</title>
 
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   >
 
-  <link rel="stylesheet" href="./style.css">
+  <!-- Deine Styles -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
+
+<!-- ==================================================
+     HEADER
+================================================== -->
+
 <header class="header">
 
-  <div>
-    <h1>📍 NRW Chillspots</h1>
-    <p>Finde und teile geile Spots in NRW</p>
+  <div class="header-top">
+
+    <div>
+
+      <h1>📍 NRW Chillspots</h1>
+
+      <p>
+        finde und teile geile Spots in NRW
+      </p>
+
+    </div>
+
   </div>
+
 
   <div class="top-buttons">
 
     <button
-      id="spotButton"
       class="primary"
-      type="button"
+      onclick="openSpotModal()"
     >
       ➕ Spot
     </button>
 
+
     <button
-      id="accountButton"
       class="secondary"
-      type="button"
+      onclick="openAuthModal()"
     >
       👤 Account
     </button>
 
+
     <button
-      id="adminButton"
-      class="admin-button"
-      type="button"
+      class="secondary admin-only"
+      onclick="openAdminDashboard()"
       style="display:none"
     >
       🛡️ Admin
@@ -52,57 +79,79 @@
 
   </div>
 
-  <div id="accountInfo" class="account-info">
+
+  <div
+    id="accountInfo"
+    class="account-info"
+  >
     Nicht eingeloggt
   </div>
 
 </header>
 
 
-<main>
 
-  <section class="panel">
+<!-- ==================================================
+     SUCHE
+================================================== -->
 
-    <input
-      id="search"
-      class="search"
-      type="search"
-      placeholder="🔎 Stadt oder Spot suchen..."
-      autocomplete="off"
+<section class="panel">
+
+  <input
+    id="search"
+    class="search"
+    type="text"
+    placeholder="🔎 Stadt oder Spot suchen..."
+    oninput="filterSpots()"
+  >
+
+</section>
+
+
+
+<!-- ==================================================
+     KARTE
+================================================== -->
+
+<div id="map"></div>
+
+
+
+<!-- ==================================================
+     SPOT LISTE
+================================================== -->
+
+<section class="panel">
+
+  <div class="section-title">
+
+    <h2>🔥 Chillspots</h2>
+
+    <button
+      class="secondary small-button"
+      onclick="clearSearch()"
     >
+      Zurücksetzen
+    </button>
 
-  </section>
-
-
-  <section class="map-wrapper">
-
-    <div id="map"></div>
-
-  </section>
+  </div>
 
 
-  <section class="panel">
+  <div id="spotList">
 
-    <div class="section-title">
-
-      <h2>🔥 Chillspots</h2>
-
-      <span id="spotCount">
-        0 Spots
-      </span>
-
+    <div class="empty">
+      ⏳ Spots werden geladen...
     </div>
 
-    <div id="spotList"></div>
+  </div>
 
-  </section>
-
-</main>
+</section>
 
 
-<!-- =========================
+
+<!-- ==================================================
      SPOT MODAL
-========================= -->
+================================================== -->
 
 <div
   id="spotModal"
@@ -116,8 +165,8 @@
       <h2>📍 Neuen Chillspot</h2>
 
       <button
-        id="closeSpotBtn"
-        class="close-btn"
+        class="close-button"
+        onclick="closeSpotModal()"
         type="button"
       >
         ✕
@@ -125,10 +174,14 @@
 
     </div>
 
-    <p class="hint">
-      Klicke auf der Karte auf den Standort deines Spots.
+
+    <p class="modal-description">
+      Wähle einen Standort auf der Karte und
+      gib deinem Spot einen Namen.
     </p>
 
+
+    <!-- NAME -->
 
     <label for="spotName">
       Name
@@ -137,10 +190,12 @@
     <input
       id="spotName"
       type="text"
-      placeholder="z.B. Baldeneysee"
-      maxlength="80"
+      placeholder="z.B. Seepark"
+      maxlength="100"
     >
 
+
+    <!-- BESCHREIBUNG -->
 
     <label for="spotDescription">
       Beschreibung
@@ -152,6 +207,8 @@
       maxlength="1000"
     ></textarea>
 
+
+    <!-- KATEGORIE -->
 
     <label for="spotCategory">
       Kategorie
@@ -186,6 +243,8 @@
     </select>
 
 
+    <!-- FOTO -->
+
     <label for="spotPhoto">
       Foto
     </label>
@@ -196,36 +255,42 @@
       accept="image/*"
     >
 
-    <p
+
+    <!-- STANDORT -->
+
+    <div
       id="selectedLocation"
-      class="location-text"
+      class="selected-location"
     >
-      📍 Noch kein Standort ausgewählt
-    </p>
+      Noch kein Standort ausgewählt
+    </div>
 
 
     <button
-      id="myLocationBtn"
-      class="secondary full"
+      class="location-button"
+      onclick="useMyLocation()"
       type="button"
     >
       📍 Meinen Standort verwenden
     </button>
 
 
+    <!-- BUTTONS -->
+
     <div class="modal-actions">
 
       <button
-        id="cancelSpotBtn"
         class="secondary"
+        onclick="closeSpotModal()"
         type="button"
       >
         Abbrechen
       </button>
 
+
       <button
-        id="publishSpotBtn"
         class="primary"
+        onclick="createSpot()"
         type="button"
       >
         🚀 Veröffentlichen
@@ -238,9 +303,10 @@
 </div>
 
 
-<!-- =========================
+
+<!-- ==================================================
      ACCOUNT MODAL
-========================= -->
+================================================== -->
 
 <div
   id="authModal"
@@ -254,8 +320,8 @@
       <h2>👤 Account</h2>
 
       <button
-        id="closeAccountBtn"
-        class="close-btn"
+        class="close-button"
+        onclick="closeAuthModal()"
         type="button"
       >
         ✕
@@ -264,9 +330,9 @@
     </div>
 
 
-    <div
-      id="loggedOutArea"
-    >
+    <!-- LOGIN -->
+
+    <div id="loginSection">
 
       <label for="email">
         E-Mail
@@ -295,19 +361,19 @@
       <div class="modal-actions">
 
         <button
-          id="registerBtn"
           class="primary"
-          type="button"
-        >
-          📝 Registrieren
-        </button>
-
-        <button
-          id="loginBtn"
-          class="secondary"
+          onclick="signIn()"
           type="button"
         >
           🔑 Einloggen
+        </button>
+
+        <button
+          class="secondary"
+          onclick="signUp()"
+          type="button"
+        >
+          ✨ Registrieren
         </button>
 
       </div>
@@ -315,56 +381,46 @@
     </div>
 
 
+
+    <!-- EINGELOGGT -->
+
     <div
-      id="loggedInArea"
+      id="loggedInSection"
       style="display:none"
     >
 
-      <div class="profile-card">
+      <div class="profile-preview">
 
-        <div class="profile-icon">
-          👤
+        <div
+          id="profileNickname"
+          class="profile-nickname"
+        >
+          @nickname
         </div>
 
-        <div>
-
-          <strong>
-            Eingeloggt
-          </strong>
-
-          <p
-            id="loggedInEmail"
-            class="muted"
-          ></p>
-
+        <div
+          id="profileEmail"
+          class="profile-email"
+        >
+          email
         </div>
 
       </div>
 
 
-      <label for="nicknameInput">
-        Dein Nickname
-      </label>
-
-      <input
-        id="nicknameInput"
-        type="text"
-        maxlength="24"
-        placeholder="z.B. Oskar"
-      >
-
       <button
-        id="saveNicknameBtn"
-        class="primary full"
+        class="primary full-button"
+        onclick="openProfile()"
         type="button"
       >
-        💾 Nickname speichern
+        ✏️ Profil bearbeiten
       </button>
 
 
       <button
-        id="logoutBtn"
-        class="logout-btn full"
+        id="logoutButton"
+        class="secondary full-button"
+        onclick="logout()"
         type="button"
       >
         👋 Ausloggen
@@ -377,41 +433,10 @@
 </div>
 
 
-<!-- =========================
-     ADMIN MODAL
-========================= -->
 
-<div
-  id="adminModal"
-  class="modal"
->
-
-  <div class="modal-box admin-box">
-
-    <div class="modal-header">
-
-      <h2>🛡️ Admin Dashboard</h2>
-
-      <button
-        id="closeAdminBtn"
-        class="close-btn"
-        type="button"
-      >
-        ✕
-      </button>
-
-    </div>
-
-    <p class="hint">
-      Hier kannst du von dir oder anderen erstellte Spots verwalten.
-    </p>
-
-    <div id="adminContent"></div>
-
-  </div>
-
-</div>
-
+<!-- ==================================================
+     STATUS
+================================================== -->
 
 <div
   id="status"
@@ -419,15 +444,46 @@
 ></div>
 
 
+
+<!-- ==================================================
+     LEAFLET
+================================================== -->
+
 <script
   src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
+
+
+
+<!-- ==================================================
+     SUPABASE
+================================================== -->
 
 <script
   src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
 ></script>
 
-<script src="./app.js"></script>
+
+
+<!-- ==================================================
+     DEINE JS DATEIEN
+================================================== -->
+
+<script src="js/app.js"></script>
+
+<script src="js/auth.js"></script>
+
+<script src="js/profiles.js"></script>
+
+<script src="js/spots.js"></script>
+
+<script src="js/likes.js"></script>
+
+<script src="js/map.js"></script>
+
+<script src="js/admin.js"></script>
+
 
 </body>
+
 </html>
