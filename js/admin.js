@@ -1,459 +1,281 @@
-// ======================================================
-// NRW CHILLSPOTS - ADMIN.JS
-// Admin-System + Admin-Dashboard
-// ======================================================
+// ===============================
+// ADMIN.JS
+// NRW CHILLSPOTS
+// ===============================
 
-const Admin = {
 
-  // ----------------------------------------------------
-  // AKTUELLER USER IST ADMIN?
-  // ----------------------------------------------------
-  async isAdmin() {
+// ===============================
+// ADMIN PRÜFEN
+// ===============================
 
-    const user = await Auth.getUser();
+async function checkAdmin() {
 
-    if (!user) {
+  try {
+
+    const {
+      data: {
+        user
+      },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
       return false;
     }
 
+
     const {
-      data,
+      data: profile,
       error
     } = await supabaseClient
       .from("profiles")
-      .select("is_admin")
+      .select("role,is_admin,nickname")
       .eq("id", user.id)
       .maybeSingle();
 
+
     if (error) {
-      console.error("Admin-Prüfung:", error);
+
+      console.error(
+        "Admin check:",
+        error
+      );
+
       return false;
     }
 
-    return data?.is_admin === true;
-  },
 
+    return (
+      profile?.role === "admin" ||
+      profile?.is_admin === true
+    );
 
-  // ----------------------------------------------------
-  // ADMIN UI AKTUALISIEREN
-  // ----------------------------------------------------
-  async updateUI() {
+  } catch (error) {
 
-    const admin = await this.isAdmin();
-
-    const adminButtons =
-      document.querySelectorAll(".admin-only");
-
-    adminButtons.forEach(button => {
-
-      button.style.display =
-        admin ? "" : "none";
-
-    });
-
-    return admin;
-  },
-
-
-  // ----------------------------------------------------
-  // ADMIN-DASHBOARD ÖFFNEN
-  // ----------------------------------------------------
-  async openDashboard() {
-
-    const admin = await this.isAdmin();
-
-    if (!admin) {
-
-      showStatus(
-        "❌ Keine Admin-Berechtigung"
-      );
-
-      return;
-    }
-
-    window.location.href =
-      "pages/admin.html";
-  },
-
-
-  // ----------------------------------------------------
-  // ALLE USER LADEN
-  // ----------------------------------------------------
-  async getUsers() {
-
-    const admin = await this.isAdmin();
-
-    if (!admin) {
-      return [];
-    }
-
-    const {
-      data,
+    console.error(
+      "Admin check crash:",
       error
-    } = await supabaseClient
-      .from("profiles")
+    );
+
+    return false;
+  }
+}
+
+
+
+// ===============================
+// ADMIN SEITE LADEN
+// ===============================
+
+async function loadAdminPage() {
+
+  const allowed =
+    await checkAdmin();
+
+
+  if (!allowed) {
+
+    showStatus(
+      "❌ Du bist kein Admin"
+    );
+
+
+    setTimeout(() => {
+
+      window.location.href =
+        "../index.html";
+
+    }, 1500);
+
+
+    return;
+  }
+
+
+  console.log(
+    "🛡️ Admin-Zugriff erlaubt"
+  );
+
+
+  await loadAdminStats();
+
+  await loadAdminUsers();
+
+  await loadAdminSpots();
+}
+
+
+
+// ===============================
+// STATISTIKEN
+// ===============================
+
+async function loadAdminStats() {
+
+  const stats =
+    document.getElementById(
+      "stats"
+    );
+
+
+  if (!stats) {
+    return;
+  }
+
+
+  // SPOTS
+
+  const {
+    count: spotCount,
+    error: spotError
+  } =
+    await supabaseClient
+      .from("spots")
       .select(
-        "id, nickname, is_admin, created_at"
-      )
-      .order(
-        "created_at",
+        "*",
         {
-          ascending: false
+          count: "exact",
+          head: true
         }
       );
 
-    if (error) {
 
-      console.error(
-        "Benutzer laden:",
-        error
-      );
+  if (spotError) {
 
-      showStatus(
-        "❌ Benutzer konnten nicht geladen werden"
-      );
-
-      return [];
-    }
-
-    return data || [];
-  },
-
-
-  // ----------------------------------------------------
-  // ADMIN-STATUS ÄNDERN
-  // ----------------------------------------------------
-  async setAdmin(
-    userId,
-    makeAdmin
-  ) {
-
-    const currentUser =
-      await Auth.getUser();
-
-    if (!currentUser) {
-
-      showStatus(
-        "❌ Du musst eingeloggt sein"
-      );
-
-      return false;
-    }
-
-
-    const admin =
-      await this.isAdmin();
-
-    if (!admin) {
-
-      showStatus(
-        "❌ Keine Admin-Berechtigung"
-      );
-
-      return false;
-    }
-
-
-    if (!userId) {
-      return false;
-    }
-
-
-    // Sich selbst nicht versehentlich entfernen
-    if (
-      String(userId) ===
-      String(currentUser.id) &&
-      !makeAdmin
-    ) {
-
-      const confirmed =
-        confirm(
-          "Willst du dir wirklich selbst die Admin-Rechte entziehen?"
-        );
-
-      if (!confirmed) {
-        return false;
-      }
-    }
-
-
-    const {
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .update({
-        is_admin: Boolean(makeAdmin)
-      })
-      .eq(
-        "id",
-        userId
-      );
-
-
-    if (error) {
-
-      console.error(
-        "Admin-Rechte:",
-        error
-      );
-
-      showStatus(
-        "❌ " + error.message
-      );
-
-      return false;
-    }
-
-
-    showStatus(
-      makeAdmin
-        ? "🛡️ Admin-Rechte vergeben"
-        : "🔒 Admin-Rechte entfernt"
+    console.error(
+      "Spot stats:",
+      spotError
     );
-
-
-    // Dashboard neu laden
-    if (
-      typeof loadAdminDashboard ===
-      "function"
-    ) {
-
-      await loadAdminDashboard();
-
-    }
-
-
-    return true;
-  },
-
-
-  // ----------------------------------------------------
-  // SPOT VON ADMIN LÖSCHEN
-  // ----------------------------------------------------
-  async deleteSpot(
-    spotId
-  ) {
-
-    const admin =
-      await this.isAdmin();
-
-    if (!admin) {
-
-      showStatus(
-        "❌ Keine Admin-Berechtigung"
-      );
-
-      return false;
-    }
-
-
-    if (!spotId) {
-      return false;
-    }
-
-
-    const confirmed =
-      confirm(
-        "Diesen Spot als Admin wirklich löschen?"
-      );
-
-
-    if (!confirmed) {
-      return false;
-    }
-
-
-    showStatus(
-      "⏳ Spot wird gelöscht..."
-    );
-
-
-    // Fotos löschen
-    const {
-      error: photosError
-    } =
-      await supabaseClient
-        .from("spot_photos")
-        .delete()
-        .eq(
-          "spot_id",
-          spotId
-        );
-
-
-    if (photosError) {
-
-      console.warn(
-        "Spot-Fotos:",
-        photosError
-      );
-
-    }
-
-
-    // Likes löschen
-    const {
-      error: likesError
-    } =
-      await supabaseClient
-        .from("likes")
-        .delete()
-        .eq(
-          "spot_id",
-          spotId
-        );
-
-
-    if (likesError) {
-
-      console.warn(
-        "Likes:",
-        likesError
-      );
-
-    }
-
-
-    // Spot löschen
-    const {
-      error
-    } =
-      await supabaseClient
-        .from("spots")
-        .delete()
-        .eq(
-          "id",
-          spotId
-        );
-
-
-    if (error) {
-
-      console.error(
-        "Spot löschen:",
-        error
-      );
-
-      showStatus(
-        "❌ " + error.message
-      );
-
-      return false;
-    }
-
-
-    showStatus(
-      "🗑️ Spot gelöscht"
-    );
-
-
-    if (
-      typeof loadAdminDashboard ===
-      "function"
-    ) {
-
-      await loadAdminDashboard();
-
-    }
-
-
-    if (
-      typeof loadSpots ===
-      "function"
-    ) {
-
-      await loadSpots();
-
-    }
-
-
-    return true;
   }
-};
 
 
-// ======================================================
-// KOMPATIBILITÄT
-// ======================================================
+  // USERS
 
-async function isAdmin() {
-  return await Admin.isAdmin();
+  const {
+    count: userCount,
+    error: userError
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "*",
+        {
+          count: "exact",
+          head: true
+        }
+      );
+
+
+  if (userError) {
+
+    console.error(
+      "User stats:",
+      userError
+    );
+  }
+
+
+  // ADMINS
+
+  const {
+    count: adminCount,
+    error: adminError
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select(
+        "*",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .or(
+        "role.eq.admin,is_admin.eq.true"
+      );
+
+
+  if (adminError) {
+
+    console.error(
+      "Admin stats:",
+      adminError
+    );
+  }
+
+
+  stats.innerHTML = `
+
+    <div class="admin-stat">
+
+      <strong>
+        ${userCount ?? 0}
+      </strong>
+
+      <span>
+        👥 User
+      </span>
+
+    </div>
+
+
+    <div class="admin-stat">
+
+      <strong>
+        ${spotCount ?? 0}
+      </strong>
+
+      <span>
+        📍 Spots
+      </span>
+
+    </div>
+
+
+    <div class="admin-stat">
+
+      <strong>
+        ${adminCount ?? 0}
+      </strong>
+
+      <span>
+        🛡️ Admins
+      </span>
+
+    </div>
+
+  `;
 }
 
 
-async function updateAdminUI() {
-  return await Admin.updateUI();
-}
 
+// ===============================
+// USER LADEN
+// ===============================
 
-async function openAdminDashboard() {
-  return await Admin.openDashboard();
-}
-
-
-// ======================================================
-// ADMIN DASHBOARD LADEN
-// ======================================================
-
-async function loadAdminDashboard() {
+async function loadAdminUsers() {
 
   const container =
     document.getElementById(
-      "adminContent"
+      "users"
     );
+
 
   if (!container) {
     return;
   }
 
 
-  const admin =
-    await Admin.isAdmin();
-
-
-  if (!admin) {
-
-    container.innerHTML = `
-      <div class="admin-error">
-        ❌ Du hast keine Admin-Berechtigung.
-      </div>
-    `;
-
-    return;
-  }
-
-
-  container.innerHTML = `
-    <div class="admin-loading">
-      ⏳ Dashboard wird geladen...
-    </div>
-  `;
-
-
-  // ====================================================
-  // USER LADEN
-  // ====================================================
-
-  const users =
-    await Admin.getUsers();
-
-
-  // ====================================================
-  // SPOTS LADEN
-  // ====================================================
-
   const {
-    data: adminSpots,
+    data: users,
     error
   } =
     await supabaseClient
-      .from("spots")
-      .select(`
-        *,
-        profiles (
-          nickname
-        )
-      `)
+      .from("profiles")
+      .select(
+        "id,nickname,username,role,is_admin,created_at"
+      )
       .order(
         "created_at",
         {
@@ -465,264 +287,644 @@ async function loadAdminDashboard() {
   if (error) {
 
     console.error(
-      "Admin-Spots:",
+      "Users:",
       error
     );
 
+
     container.innerHTML = `
-      <div class="admin-error">
-        ❌ Spots konnten nicht geladen werden
+
+      <div class="empty">
+
+        ❌ Benutzer konnten nicht
+        geladen werden
+
       </div>
+
     `;
 
     return;
   }
 
 
-  // ====================================================
-  // DASHBOARD
-  // ====================================================
+  if (!users?.length) {
 
-  container.innerHTML = `
+    container.innerHTML = `
 
-    <section class="admin-section">
+      <div class="empty">
 
-      <h2>📊 Übersicht</h2>
-
-      <div class="admin-stats">
-
-        <div class="admin-stat">
-          <strong>${users.length}</strong>
-          <span>Benutzer</span>
-        </div>
-
-        <div class="admin-stat">
-          <strong>${adminSpots?.length || 0}</strong>
-          <span>Spots</span>
-        </div>
-
-        <div class="admin-stat">
-          <strong>
-            ${
-              users.filter(
-                user =>
-                  user.is_admin === true
-              ).length
-            }
-          </strong>
-          <span>Admins</span>
-        </div>
+        Keine Benutzer gefunden 😭
 
       </div>
 
-    </section>
+    `;
 
-
-    <section class="admin-section">
-
-      <h2>👥 Benutzer</h2>
-
-      <div id="adminUsers"></div>
-
-    </section>
-
-
-    <section class="admin-section">
-
-      <h2>📍 Spots</h2>
-
-      <div id="adminSpots"></div>
-
-    </section>
-  `;
-
-
-  // ====================================================
-  // USER LISTE
-  // ====================================================
-
-  const usersContainer =
-    document.getElementById(
-      "adminUsers"
-    );
-
-
-  if (!users.length) {
-
-    usersContainer.innerHTML =
-      "<p>Keine Benutzer gefunden.</p>";
-
-  } else {
-
-    usersContainer.innerHTML =
-      users.map(
-        user => {
-
-          const nickname =
-            escapeHtml(
-              user.nickname ||
-              "Kein Nickname"
-            );
-
-
-          const adminText =
-            user.is_admin
-              ? "🛡️ Admin"
-              : "👤 User";
-
-
-          const buttonText =
-            user.is_admin
-              ? "Admin entfernen"
-              : "Zum Admin machen";
-
-
-          return `
-
-            <div class="admin-user">
-
-              <div>
-
-                <strong>
-                  @${nickname}
-                </strong>
-
-                <div class="admin-user-role">
-                  ${adminText}
-                </div>
-
-              </div>
-
-              <button
-                class="admin-action-btn"
-                onclick="
-                  Admin.setAdmin(
-                    '${user.id}',
-                    ${!user.is_admin}
-                  )
-                "
-              >
-                ${buttonText}
-              </button>
-
-            </div>
-
-          `;
-
-        }
-      ).join("");
+    return;
   }
 
 
-  // ====================================================
-  // SPOT LISTE
-  // ====================================================
+  container.innerHTML = "";
 
-  const spotsContainer =
+
+  for (const user of users) {
+
+    const isAdmin =
+      user.role === "admin" ||
+      user.is_admin === true;
+
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+
+    div.className =
+      "admin-user";
+
+
+    div.innerHTML = `
+
+      <div class="admin-user-info">
+
+        <strong>
+
+          👤 @${escapeHtml(
+            user.nickname ||
+            user.username ||
+            "Kein Nickname"
+          )}
+
+        </strong>
+
+
+        <span>
+
+          ${
+            isAdmin
+              ? "🛡️ Admin"
+              : "👤 User"
+          }
+
+        </span>
+
+      </div>
+
+
+      <div class="admin-user-actions">
+
+        ${
+          isAdmin
+
+            ? `
+
+              <button
+                class="secondary"
+                onclick="changeAdmin(
+                  '${escapeHtml(
+                    String(user.id)
+                  )}',
+                  false
+                )"
+              >
+
+                ⬇️ Admin entfernen
+
+              </button>
+
+            `
+
+            : `
+
+              <button
+                class="primary"
+                onclick="changeAdmin(
+                  '${escapeHtml(
+                    String(user.id)
+                  )}',
+                  true
+                )"
+              >
+
+                🛡️ Admin machen
+
+              </button>
+
+            `
+        }
+
+      </div>
+
+    `;
+
+
+    container.appendChild(
+      div
+    );
+  }
+}
+
+
+
+// ===============================
+// ADMIN RECHTE ÄNDERN
+// ===============================
+
+async function changeAdmin(
+  userId,
+  makeAdmin
+) {
+
+  const allowed =
+    await checkAdmin();
+
+
+  if (!allowed) {
+
+    showStatus(
+      "❌ Keine Berechtigung"
+    );
+
+    return;
+  }
+
+
+  const text =
+    makeAdmin
+      ? "Diesen User wirklich zum Admin machen?"
+      : "Adminrechte wirklich entfernen?";
+
+
+  if (!confirm(text)) {
+    return;
+  }
+
+
+  showStatus(
+    "⏳ Rechte werden geändert..."
+  );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .rpc(
+        "set_admin",
+        {
+          target_user:
+            userId,
+
+          make_admin:
+            makeAdmin
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "SET ADMIN:",
+      error
+    );
+
+
+    showStatus(
+      "❌ " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  if (!data) {
+
+    showStatus(
+      "❌ Benutzer wurde nicht gefunden"
+    );
+
+    return;
+  }
+
+
+  showStatus(
+    makeAdmin
+      ? "🛡️ Admin hinzugefügt"
+      : "⬇️ Admin entfernt"
+  );
+
+
+  await loadAdminStats();
+
+  await loadAdminUsers();
+}
+
+
+
+// ===============================
+// ADMIN SPOTS
+// ===============================
+
+async function loadAdminSpots() {
+
+  const container =
     document.getElementById(
       "adminSpots"
     );
 
 
-  if (
-    !adminSpots ||
-    !adminSpots.length
+  if (!container) {
+    return;
+  }
+
+
+  const {
+    data: spotsData,
+    error
+  } =
+    await supabaseClient
+      .from("spots")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Admin spots:",
+      error
+    );
+
+
+    container.innerHTML = `
+
+      <div class="empty">
+
+        ❌ Spots konnten nicht
+        geladen werden
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  if (!spotsData?.length) {
+
+    container.innerHTML = `
+
+      <div class="empty">
+
+        Noch keine Spots 😭
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  // USER IDs
+
+  const userIds =
+    spotsData
+      .map(
+        spot => spot.user_id
+      )
+      .filter(Boolean);
+
+
+  let profiles = [];
+
+
+  if (userIds.length) {
+
+    const {
+      data,
+      error: profileError
+    } =
+      await supabaseClient
+        .from("profiles")
+        .select(
+          "id,nickname,username"
+        )
+        .in(
+          "id",
+          userIds
+        );
+
+
+    if (!profileError) {
+
+      profiles =
+        data || [];
+
+    }
+  }
+
+
+  const profileMap =
+    new Map(
+      profiles.map(
+        profile => [
+          profile.id,
+          profile
+        ]
+      )
+    );
+
+
+  container.innerHTML = "";
+
+
+  // SPOTS
+
+  for (
+    const spot of spotsData
   ) {
 
-    spotsContainer.innerHTML =
-      "<p>Keine Spots vorhanden.</p>";
-
-  } else {
-
-    spotsContainer.innerHTML =
-      adminSpots.map(
-        spot => {
-
-          const name =
-            escapeHtml(
-              spot.name ||
-              "Unbenannter Spot"
-            );
+    const profile =
+      profileMap.get(
+        spot.user_id
+      );
 
 
-          const nickname =
-            escapeHtml(
-              spot.profiles?.nickname ||
-              "Unbekannt"
-            );
+    const nickname =
+      profile?.nickname ||
+      profile?.username ||
+      "Unbekannt";
 
 
-          const category =
-            escapeHtml(
-              spot.category ||
-              "Sonstiges"
-            );
+    const div =
+      document.createElement(
+        "div"
+      );
 
 
-          return `
+    div.className =
+      "admin-spot";
 
-            <div class="admin-spot">
 
-              <div>
+    div.innerHTML = `
 
-                <strong>
-                  📍 ${name}
-                </strong>
+      <div>
 
-                <div class="admin-spot-info">
-                  Kategorie: ${category}
-                </div>
+        <h3>
 
-                <div class="admin-spot-info">
-                  Erstellt von:
-                  <strong>
-                    @${nickname}
-                  </strong>
-                </div>
+          📍 ${escapeHtml(
+            spot.name
+          )}
 
-              </div>
+        </h3>
 
-              <button
-                class="admin-delete-btn"
-                onclick="
-                  Admin.deleteSpot(
-                    '${spot.id}'
-                  )
-                "
-              >
-                🗑️ Löschen
-              </button>
 
-            </div>
+        <p>
 
-          `;
+          ${escapeHtml(
+            spot.description ||
+            "Keine Beschreibung"
+          )}
 
-        }
-      ).join("");
+        </p>
+
+
+        <span>
+
+          🏷️ ${escapeHtml(
+            spot.category ||
+            "Sonstiges"
+          )}
+
+        </span>
+
+
+        <p>
+
+          👤 erstellt von
+          <strong>
+            @${escapeHtml(
+              nickname
+            )}
+          </strong>
+
+        </p>
+
+
+        <p class="admin-location">
+
+          📍 ${Number(
+            spot.latitude
+          ).toFixed(5)},
+          ${Number(
+            spot.longitude
+          ).toFixed(5)}
+
+        </p>
+
+      </div>
+
+
+      <button
+        class="delete-btn"
+        onclick="adminDeleteSpot(
+          '${escapeHtml(
+            String(spot.id)
+          )}'
+        )"
+      >
+
+        🗑️ Löschen
+
+      </button>
+
+    `;
+
+
+    container.appendChild(
+      div
+    );
   }
 }
 
 
-// ======================================================
-// START
-// ======================================================
 
-document.addEventListener(
-  "DOMContentLoaded",
-  async function() {
+// ===============================
+// ADMIN SPOT LÖSCHEN
+// ===============================
 
-    await updateAdminUI();
+async function adminDeleteSpot(
+  spotId
+) {
 
-    // Nur auf admin.html
-    if (
-      document.getElementById(
-        "adminContent"
-      )
-    ) {
+  const allowed =
+    await checkAdmin();
 
-      await loadAdminDashboard();
 
-    }
+  if (!allowed) {
+
+    showStatus(
+      "❌ Keine Berechtigung"
+    );
+
+    return;
+  }
+
+
+  if (
+    !confirm(
+      "Diesen Spot wirklich endgültig löschen?"
+    )
+  ) {
+
+    return;
+  }
+
+
+  showStatus(
+    "⏳ Spot wird gelöscht..."
+  );
+
+
+  // FOTO-REFERENZEN LÖSCHEN
+
+  const {
+    error: photoError
+  } =
+    await supabaseClient
+      .from("spot_photos")
+      .delete()
+      .eq(
+        "spot_id",
+        spotId
+      );
+
+
+  if (photoError) {
+
+    console.warn(
+      "Foto-Referenzen:",
+      photoError
+    );
+  }
+
+
+  // LIKES LÖSCHEN
+
+  const {
+    error: likeError
+  } =
+    await supabaseClient
+      .from("likes")
+      .delete()
+      .eq(
+        "spot_id",
+        spotId
+      );
+
+
+  if (likeError) {
+
+    console.warn(
+      "Likes:",
+      likeError
+    );
+  }
+
+
+  // SPOT LÖSCHEN
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("spots")
+      .delete()
+      .eq(
+        "id",
+        spotId
+      );
+
+
+  if (error) {
+
+    console.error(
+      "ADMIN DELETE:",
+      error
+    );
+
+
+    showStatus(
+      "❌ " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  showStatus(
+    "🗑️ Spot gelöscht"
+  );
+
+
+  await loadAdminStats();
+
+  await loadAdminSpots();
+}
+
+
+
+// ===============================
+// ESCAPE HTML
+// ===============================
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
 
   }
-);
+
+
+  return String(value)
+
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
+}
