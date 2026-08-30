@@ -19,178 +19,127 @@
 
 </head>
 
-
 <body>
 
-  <main
-    class="panel"
-    style="max-width: 1000px;"
-  >
+
+<div
+  id="adminLoading"
+  class="admin-loading"
+>
+  🛡️ Admin-Bereich wird geprüft...
+</div>
 
 
-    <!-- HEADER -->
+<main
+  id="adminPanel"
+  class="panel"
+  style="
+    max-width:1000px;
+    display:none;
+  "
+>
 
-    <div class="section-title">
 
-      <h1>🛡️ Admin Dashboard</h1>
+  <div class="section-title">
 
-      <button
-        class="secondary"
-        onclick="goHome()"
-      >
-        ← Zurück
-      </button>
+    <h1>
+      🛡️ Admin Dashboard
+    </h1>
+
+    <button
+      class="secondary"
+      onclick="window.location.href='../index.html'"
+    >
+      ← Zurück
+    </button>
+
+  </div>
+
+
+  <section class="admin-section">
+
+    <h2>
+      📊 Übersicht
+    </h2>
+
+    <div
+      id="stats"
+      class="admin-stats"
+    >
+
+      ⏳
 
     </div>
 
-
-    <!-- STATS -->
-
-    <section class="admin-section">
-
-      <h2>📊 Übersicht</h2>
-
-      <div
-        id="stats"
-        class="admin-stats"
-      >
-
-        <div class="admin-stat">
-
-          <strong>...</strong>
-
-          <span>User</span>
-
-        </div>
+  </section>
 
 
-        <div class="admin-stat">
+  <section class="admin-section">
 
-          <strong>...</strong>
+    <h2>
+      👥 Benutzer
+    </h2>
 
-          <span>Spots</span>
+    <div id="users">
 
-        </div>
-
-
-        <div class="admin-stat">
-
-          <strong>...</strong>
-
-          <span>Admins</span>
-
-        </div>
-
+      <div class="empty">
+        ⏳ Benutzer werden geladen...
       </div>
 
-    </section>
+    </div>
+
+  </section>
 
 
-    <!-- USER -->
+  <section class="admin-section">
 
-    <section class="admin-section">
+    <h2>
+      📍 Spots
+    </h2>
 
-      <h2>👥 Benutzer</h2>
+    <div id="adminSpots">
 
-      <div id="users">
-
-        <div class="empty">
-          ⏳ Benutzer werden geladen...
-        </div>
-
+      <div class="empty">
+        ⏳ Spots werden geladen...
       </div>
 
-    </section>
+    </div>
+
+  </section>
 
 
-    <!-- SPOTS -->
-
-    <section class="admin-section">
-
-      <h2>📍 Alle Spots</h2>
-
-      <div id="adminSpots">
-
-        <div class="empty">
-          ⏳ Spots werden geladen...
-        </div>
-
-      </div>
-
-    </section>
+</main>
 
 
-  </main>
+<div
+  id="status"
+  class="status"
+></div>
 
 
-  <!-- STATUS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <div
-    id="status"
-    class="status"
-  ></div>
-
-
-  <!-- SUPABASE -->
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/app.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/profiles.js"></script>
+<script src="../js/spots.js"></script>
+<script src="../js/likes.js"></script>
+<script src="../js/map.js"></script>
+<script src="../js/admin.js"></script>
 
 
-  <!-- APP -->
+<script>
 
-  <script src="../js/app.js"></script>
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
 
+    loadAdminPage();
 
-  <!-- AUTH -->
+  }
+);
 
-  <script src="../js/auth.js"></script>
-
-
-  <!-- PROFILES -->
-
-  <script src="../js/profiles.js"></script>
-
-
-  <!-- SPOTS -->
-
-  <script src="../js/spots.js"></script>
-
-
-  <!-- LIKES -->
-
-  <script src="../js/likes.js"></script>
-
-
-  <!-- MAP -->
-
-  <script src="../js/map.js"></script>
-
-
-  <!-- ADMIN -->
-
-  <script src="../js/admin.js"></script>
-
-
-  <script>
-
-    function goHome() {
-
-      window.location.href =
-        "../index.html";
-
-    }
-
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
-
-        loadAdminPage();
-
-      }
-    );
-
-  </script>
+</script>
 
 </body>
 
