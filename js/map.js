@@ -5,6 +5,10 @@
 let map = null;
 let markers = [];
 
+let selectedLat = null;
+let selectedLng = null;
+let selectedMarker = null;
+
 
 // ===============================
 // KARTE INITIALISIEREN
@@ -12,44 +16,252 @@ let markers = [];
 
 function initMap() {
 
-  const mapElement =
-    document.getElementById("map");
+  const mapElement = document.getElementById("map");
 
   if (!mapElement) {
-    console.error("Map element nicht gefunden");
+    console.error("❌ #map nicht gefunden");
+    return;
+  }
+
+  if (map) {
     return;
   }
 
   map = L.map("map").setView(
-    [51.5177, 7.0857],
+    [51.48, 7.22],
     10
   );
+
 
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
       attribution:
-        '&copy; OpenStreetMap contributors'
+        "&copy; OpenStreetMap contributors"
     }
   ).addTo(map);
+
+
+  // ===============================
+  // AUF KARTE KLICKEN
+  // ===============================
+
+  map.on("click", function(e) {
+
+    selectedLat = e.latlng.lat;
+    selectedLng = e.latlng.lng;
+
+
+    // alten Auswahl-Marker entfernen
+
+    if (selectedMarker) {
+      map.removeLayer(selectedMarker);
+    }
+
+
+    // neuen Marker setzen
+
+    selectedMarker =
+      L.marker([
+        selectedLat,
+        selectedLng
+      ]).addTo(map);
+
+
+    selectedMarker.bindPopup(
+      "📍 Ausgewählter Standort"
+    );
+
+
+    // Text im Spot-Modal aktualisieren
+
+    const locationText =
+      document.getElementById(
+        "selectedLocation"
+      );
+
+
+    if (locationText) {
+
+      locationText.textContent =
+        `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+
+    }
+
+  });
+
 
   renderMarkers();
 }
 
 
+
 // ===============================
-// MARKER ANZEIGEN
+// STANDORT VERWENDEN
+// ===============================
+
+function useMyLocation() {
+
+  if (!navigator.geolocation) {
+
+    showStatus(
+      "❌ Dein Browser unterstützt keinen Standort"
+    );
+
+    return;
+  }
+
+
+  showStatus(
+    "📍 Standort wird gesucht..."
+  );
+
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position) {
+
+      selectedLat =
+        position.coords.latitude;
+
+      selectedLng =
+        position.coords.longitude;
+
+
+      // Karte zum Standort bewegen
+
+      if (map) {
+
+        map.setView(
+          [
+            selectedLat,
+            selectedLng
+          ],
+          16
+        );
+
+      }
+
+
+      // alten Marker entfernen
+
+      if (selectedMarker && map) {
+
+        map.removeLayer(
+          selectedMarker
+        );
+
+      }
+
+
+      // neuen Marker erstellen
+
+      if (map) {
+
+        selectedMarker =
+          L.marker([
+            selectedLat,
+            selectedLng
+          ]).addTo(map);
+
+
+        selectedMarker.bindPopup(
+          "📍 Dein Standort"
+        ).openPopup();
+
+      }
+
+
+      // Modal aktualisieren
+
+      const locationText =
+        document.getElementById(
+          "selectedLocation"
+        );
+
+
+      if (locationText) {
+
+        locationText.textContent =
+          "📍 Dein Standort ausgewählt";
+
+      }
+
+
+      showStatus(
+        "✅ Standort ausgewählt"
+      );
+
+    },
+
+
+    function(error) {
+
+      console.error(
+        "Geolocation Fehler:",
+        error
+      );
+
+
+      let message =
+        "❌ Standort konnte nicht abgerufen werden";
+
+
+      if (error.code === 1) {
+
+        message =
+          "❌ Standortzugriff wurde verweigert";
+
+      }
+
+      if (error.code === 2) {
+
+        message =
+          "❌ Standort ist momentan nicht verfügbar";
+
+      }
+
+      if (error.code === 3) {
+
+        message =
+          "❌ Standortabfrage dauerte zu lange";
+
+      }
+
+
+      showStatus(message);
+
+    },
+
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+
+  );
+
+}
+
+
+
+// ===============================
+// MARKER VON SPOTS
 // ===============================
 
 async function renderMarkers() {
 
-  if (!map) return;
+  if (!map) {
+    return;
+  }
 
-  // alte Marker entfernen
 
-  markers.forEach(marker => {
-    map.removeLayer(marker);
-  });
+  // alte Spot-Marker entfernen
+
+  markers.forEach(
+    marker => map.removeLayer(marker)
+  );
 
   markers = [];
 
@@ -62,46 +274,56 @@ async function renderMarkers() {
   for (const spot of spots) {
 
     if (
+      spot.latitude === null ||
       spot.latitude === undefined ||
+      spot.longitude === null ||
       spot.longitude === undefined
     ) {
+
       continue;
+
     }
 
 
-    // ===============================
-    // LIKES LADEN
-    // ===============================
-
     let likeCount = 0;
+
+
+    // ===============================
+    // LIKES
+    // ===============================
 
     try {
 
       const {
         count,
         error
-      } = await supabaseClient
-        .from("likes")
-        .select(
-          "*",
-          {
-            count: "exact",
-            head: true
-          }
-        )
-        .eq(
-          "spot_id",
-          spot.id
-        );
+      } =
+        await supabaseClient
+          .from("likes")
+          .select(
+            "*",
+            {
+              count: "exact",
+              head: true
+            }
+          )
+          .eq(
+            "spot_id",
+            spot.id
+          );
+
 
       if (!error) {
-        likeCount = count || 0;
+
+        likeCount =
+          count || 0;
+
       }
 
     } catch (error) {
 
       console.error(
-        "Likes konnten nicht geladen werden:",
+        "Like Count Fehler:",
         error
       );
 
@@ -116,10 +338,7 @@ async function renderMarkers() {
       L.marker([
         Number(spot.latitude),
         Number(spot.longitude)
-      ]);
-
-
-    marker.addTo(map);
+      ]).addTo(map);
 
 
     // ===============================
@@ -131,9 +350,7 @@ async function renderMarkers() {
       <div class="map-popup">
 
         <h3>
-          📍 ${escapeHtml(
-            spot.name
-          )}
+          📍 ${escapeHtml(spot.name)}
         </h3>
 
         <p>
@@ -173,18 +390,82 @@ async function renderMarkers() {
 
 
     markers.push(marker);
+
   }
+
 }
 
 
+
 // ===============================
-// MARKER NEU LADEN
+// AUSGEWÄHLTEN STANDORT LÖSCHEN
+// ===============================
+
+function clearSelectedLocation() {
+
+  selectedLat = null;
+  selectedLng = null;
+
+
+  if (
+    selectedMarker &&
+    map
+  ) {
+
+    map.removeLayer(
+      selectedMarker
+    );
+
+  }
+
+
+  selectedMarker = null;
+
+
+  const locationText =
+    document.getElementById(
+      "selectedLocation"
+    );
+
+
+  if (locationText) {
+
+    locationText.textContent =
+      "Noch kein Standort ausgewählt";
+
+  }
+
+}
+
+
+
+// ===============================
+// KARTE AKTUALISIEREN
 // ===============================
 
 async function refreshMapMarkers() {
 
-  await loadSpots();
+  if (
+    typeof loadSpots === "function"
+  ) {
 
-  await renderMarkers();
+    await loadSpots();
+
+  }
 
 }
+
+
+
+// ===============================
+// START
+// ===============================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    initMap();
+
+  }
+);
