@@ -1,1 +1,197 @@
-d
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Admin · NRW Chillspots</title>
+
+  <link
+    rel="stylesheet"
+    href="../style.css"
+  >
+
+</head>
+
+
+<body>
+
+  <main
+    class="panel"
+    style="max-width: 1000px;"
+  >
+
+
+    <!-- HEADER -->
+
+    <div class="section-title">
+
+      <h1>🛡️ Admin Dashboard</h1>
+
+      <button
+        class="secondary"
+        onclick="goHome()"
+      >
+        ← Zurück
+      </button>
+
+    </div>
+
+
+    <!-- STATS -->
+
+    <section class="admin-section">
+
+      <h2>📊 Übersicht</h2>
+
+      <div
+        id="stats"
+        class="admin-stats"
+      >
+
+        <div class="admin-stat">
+
+          <strong>...</strong>
+
+          <span>User</span>
+
+        </div>
+
+
+        <div class="admin-stat">
+
+          <strong>...</strong>
+
+          <span>Spots</span>
+
+        </div>
+
+
+        <div class="admin-stat">
+
+          <strong>...</strong>
+
+          <span>Admins</span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- USER -->
+
+    <section class="admin-section">
+
+      <h2>👥 Benutzer</h2>
+
+      <div id="users">
+
+        <div class="empty">
+          ⏳ Benutzer werden geladen...
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SPOTS -->
+
+    <section class="admin-section">
+
+      <h2>📍 Alle Spots</h2>
+
+      <div id="adminSpots">
+
+        <div class="empty">
+          ⏳ Spots werden geladen...
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- STATUS -->
+
+  <div
+    id="status"
+    class="status"
+  ></div>
+
+
+  <!-- SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <!-- APP -->
+
+  <script src="../js/app.js"></script>
+
+
+  <!-- AUTH -->
+
+  <script src="../js/auth.js"></script>
+
+
+  <!-- PROFILES -->
+
+  <script src="../js/profiles.js"></script>
+
+
+  <!-- SPOTS -->
+
+  <script src="../js/spots.js"></script>
+
+
+  <!-- LIKES -->
+
+  <script src="../js/likes.js"></script>
+
+
+  <!-- MAP -->
+
+  <script src="../js/map.js"></script>
+
+
+  <!-- ADMIN -->
+
+  <script src="../js/admin.js"></script>
+
+
+  <script>
+
+    function goHome() {
+
+      window.location.href =
+        "../index.html";
+
+    }
+
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        loadAdminPage();
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
