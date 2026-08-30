@@ -1,1021 +1,333 @@
-/* =====================================================
-   NRW CHILLSPOTS
-   STYLE.CSS
-===================================================== */
-
-
-/* =====================================================
-   GRUNDLAGEN
-===================================================== */
-
 * {
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   margin: 0;
-  padding: 0;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
-  background: #0d0d0f;
-  color: #ffffff;
-
-  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
 }
 
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.header {
-  position: sticky;
-  top: 0;
-
-  z-index: 1000;
-
-  padding: 18px;
-
-  background: rgba(21, 21, 25, 0.96);
-
-  border-bottom:
-    1px solid #29292f;
-
-  backdrop-filter: blur(12px);
-}
-
-.header-top {
+header {
+  height: 70px;
+  padding: 0 25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-.header h1 {
-  margin: 0;
-
-  font-size: 24px;
-  line-height: 1.2;
+.logo {
+  font-size: 20px;
+  font-weight: 800;
 }
 
-.header p {
-  margin: 6px 0 0;
-
-  color: #999;
-
-  font-size: 14px;
+.header-buttons {
+  display: flex;
+  gap: 8px;
 }
-
-
-/* =====================================================
-   BUTTONS
-===================================================== */
 
 button {
   border: 0;
-
-  border-radius: 12px;
-
-  padding: 12px 16px;
-
-  font-size: 15px;
-
-  color: white;
-
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-weight: 700;
   cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease,
-    background 0.15s ease;
+  font-size: 14px;
 }
 
 button:hover {
-  opacity: 0.9;
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  opacity: .85;
 }
 
 .primary {
-  background: #22c55e;
+  background: #111827;
   color: white;
-}
-
-.primary:hover {
-  background: #16a34a;
 }
 
 .secondary {
-  background: #24242a;
-  color: white;
+  background: #e5e7eb;
+  color: #111827;
 }
-
-.secondary:hover {
-  background: #303038;
-}
-
-
-/* =====================================================
-   TOP BUTTONS
-===================================================== */
-
-.top-buttons {
-  display: flex;
-
-  gap: 8px;
-
-  margin-top: 14px;
-
-  flex-wrap: wrap;
-}
-
-.top-buttons button {
-  flex: 1;
-}
-
-
-/* =====================================================
-   ACCOUNT INFO
-===================================================== */
-
-.account-info {
-  margin-top: 9px;
-
-  color: #999;
-
-  font-size: 13px;
-
-  word-break: break-word;
-}
-
-
-/* =====================================================
-   PANELS
-===================================================== */
-
-.panel {
-  padding: 16px;
-
-  max-width: 1100px;
-
-  margin-left: auto;
-  margin-right: auto;
-}
-
-
-/* =====================================================
-   SUCHE
-===================================================== */
-
-.search {
-  width: 100%;
-
-  padding: 14px 16px;
-
-  border-radius: 14px;
-
-  border:
-    1px solid #333;
-
-  background: #18181c;
-
-  color: white;
-
-  outline: none;
-
-  font-size: 15px;
-
-  transition:
-    border 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.search:focus {
-  border-color: #22c55e;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(34, 197, 94, 0.12);
-}
-
-.search::placeholder {
-  color: #777;
-}
-
-
-/* =====================================================
-   KARTE
-===================================================== */
-
-#map {
-  width: 100%;
-
-  height: 58vh;
-
-  min-height: 400px;
-
-  background: #18181c;
-
-  z-index: 1;
-}
-
-
-/* Leaflet */
-
-.leaflet-container {
-  background: #18181c;
-  font-family: Arial, sans-serif;
-}
-
-.leaflet-popup-content-wrapper {
-  background: #17171b;
-  color: white;
-
-  border:
-    1px solid #333;
-
-  border-radius: 12px;
-}
-
-.leaflet-popup-tip {
-  background: #17171b;
-}
-
-.leaflet-popup-content {
-  margin: 12px;
-}
-
-.leaflet-popup-close-button {
-  color: white !important;
-}
-
-
-/* =====================================================
-   SECTION TITEL
-===================================================== */
-
-.section-title {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin-bottom: 14px;
-}
-
-.section-title h2 {
-  margin: 0;
-
-  font-size: 21px;
-}
-
-.small-button {
-  padding: 8px 11px;
-
-  font-size: 12px;
-}
-
-
-/* =====================================================
-   SPOT
-===================================================== */
-
-.spot {
-  background: #17171b;
-
-  border:
-    1px solid #29292f;
-
-  border-radius: 17px;
-
-  margin-bottom: 14px;
-
-  overflow: hidden;
-
-  transition:
-    transform 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.spot:hover {
-  transform: translateY(-2px);
-
-  border-color: #3b3b44;
-}
-
-
-/* =====================================================
-   SPOT FOTO
-===================================================== */
-
-.spot img {
-  width: 100%;
-
-  max-height: 260px;
-
-  object-fit: cover;
-
-  display: block;
-
-  background: #111;
-}
-
-
-/* =====================================================
-   SPOT CONTENT
-===================================================== */
-
-.spot-content {
-  padding: 15px;
-}
-
-.spot h3 {
-  margin: 0 0 8px;
-
-  font-size: 19px;
-}
-
-.spot p {
-  color: #aaa;
-
-  margin: 9px 0 0;
-
-  line-height: 1.5;
-
-  font-size: 14px;
-}
-
-
-/* =====================================================
-   KATEGORIE
-===================================================== */
-
-.category {
-  display: inline-block;
-
-  background: #27272d;
-
-  padding: 5px 9px;
-
-  border-radius: 999px;
-
-  font-size: 12px;
-
-  color: #bbb;
-}
-
-
-/* =====================================================
-   LIKE BUTTON
-===================================================== */
-
-.like-btn {
-  margin-top: 13px;
-
-  width: 100%;
-
-  background: #202024;
-
-  color: #ffffff;
-
-  border:
-    1px solid #34343b;
-
-  font-weight: 600;
-}
-
-.like-btn:hover {
-  background: #303038;
-}
-
-.like-btn.liked {
-  background: #351d24;
-
-  border-color: #7f2637;
-
-  color: #ff7188;
-}
-
-
-/* =====================================================
-   LÖSCH BUTTON
-===================================================== */
 
 .delete-btn {
-  width: 100%;
-
-  margin-top: 8px;
-
-  background: #25191b;
-
-  color: #ff667c;
-
-  border:
-    1px solid #54252d;
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.delete-btn:hover {
-  background: #3a1e23;
-}
-
-
-/* =====================================================
-   MODAL
-===================================================== */
-
-.modal {
-  display: none;
-
-  position: fixed;
-
-  inset: 0;
-
-  background:
-    rgba(0, 0, 0, 0.78);
-
-  z-index: 5000;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 18px;
-}
-
-.modal.show {
-  display: flex;
-}
-
-
-/* =====================================================
-   MODAL BOX
-===================================================== */
-
-.modal-box {
-  width: 100%;
-
-  max-width: 500px;
-
-  max-height: 90vh;
-
-  overflow-y: auto;
-
-  background: #17171b;
-
-  border:
-    1px solid #303038;
-
-  border-radius: 20px;
-
-  padding: 20px;
-
-  box-shadow:
-    0 20px 70px
-    rgba(0, 0, 0, 0.5);
-}
-
-
-/* =====================================================
-   MODAL HEADER
-===================================================== */
-
-.modal-header {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 10px;
-
-  margin-bottom: 10px;
-}
-
-.modal-header h2 {
-  margin: 0;
-
-  font-size: 21px;
-}
-
-.close-button {
-  width: 40px;
-  height: 40px;
-
-  padding: 0;
-
-  border-radius: 50%;
-
-  background: #24242a;
-
-  color: #aaa;
-
-  font-size: 17px;
-}
-
-.close-button:hover {
-  background: #33333b;
-
-  color: white;
-}
-
-
-/* =====================================================
-   MODAL TEXT
-===================================================== */
-
-.modal-description {
-  color: #999;
-
-  font-size: 14px;
-
-  line-height: 1.5;
-
-  margin-top: 0;
-}
-
-
-/* =====================================================
-   FORMULAR
-===================================================== */
-
-label {
-  display: block;
-
-  margin-top: 15px;
-
-  margin-bottom: 7px;
-
-  color: #bbb;
-
-  font-size: 14px;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-
-  padding: 13px;
-
-  border-radius: 11px;
-
-  border:
-    1px solid #333;
-
-  background: #0f0f12;
-
-  color: white;
-
-  outline: none;
-
-  font-family: inherit;
-
-  font-size: 15px;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #22c55e;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(34, 197, 94, 0.1);
-}
-
-textarea {
-  min-height: 100px;
-
-  resize: vertical;
-}
-
-select {
-  cursor: pointer;
-}
-
-input[type="file"] {
-  padding: 10px;
-
-  cursor: pointer;
-}
-
-
-/* =====================================================
-   STANDORT
-===================================================== */
-
-.selected-location {
-  margin-top: 15px;
-
-  padding: 11px;
-
-  border-radius: 11px;
-
-  background: #102319;
-
-  border:
-    1px solid #1d6338;
-
-  color: #4ade80;
-
-  font-size: 13px;
-}
-
-.location-button {
-  width: 100%;
-
-  margin-top: 9px;
-
-  background: #24242a;
-
-  border:
-    1px solid #333;
-
-  color: white;
-}
-
-
-/* =====================================================
-   MODAL ACTIONS
-===================================================== */
-
-.modal-actions {
-  display: flex;
-
-  gap: 9px;
-
-  margin-top: 20px;
-}
-
-.modal-actions button {
-  flex: 1;
-}
-
-
-/* =====================================================
-   ACCOUNT / PROFIL
-===================================================== */
-
-.profile-preview {
-  padding: 15px;
-
-  margin-bottom: 12px;
-
-  background: #101014;
-
-  border:
-    1px solid #29292f;
-
-  border-radius: 14px;
-}
-
-.profile-nickname {
-  font-size: 18px;
-
-  font-weight: bold;
-}
-
-.profile-email {
-  margin-top: 5px;
-
-  color: #777;
-
-  font-size: 13px;
+.like-btn {
+  background: #fce7f3;
+  color: #9d174d;
 }
 
 .full-button {
   width: 100%;
-
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 25px;
+}
 
-/* =====================================================
-   EMPTY
-===================================================== */
-
-.empty {
+.hero {
   text-align: center;
-
-  padding: 45px 15px;
-
-  color: #777;
-
-  background: #151519;
-
-  border:
-    1px solid #25252b;
-
-  border-radius: 16px;
-
-  line-height: 1.6;
+  padding: 25px 10px;
 }
 
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-.status {
-  position: fixed;
-
-  bottom: 20px;
-
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  background: #222229;
-
-  border:
-    1px solid #383840;
-
-  padding: 12px 18px;
-
-  border-radius: 999px;
-
-  z-index: 9999;
-
-  display: none;
-
-  max-width: 90%;
-
-  text-align: center;
-
-  font-size: 14px;
-
-  box-shadow:
-    0 8px 30px
-    rgba(0, 0, 0, 0.35);
+.hero h1 {
+  margin-bottom: 8px;
 }
 
+.hero p {
+  color: #6b7280;
+}
 
-/* =====================================================
-   ADMIN
-===================================================== */
+.map-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
 
-.admin-section {
-  background: #17171b;
+#map {
+  width: 100%;
+  height: 500px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ddd;
+}
 
-  border:
-    1px solid #29292f;
+.spots-section {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+}
 
-  border-radius: 17px;
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
 
+.spot-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.spot {
+  border: 1px solid #e5e7eb;
+  border-radius: 15px;
+  overflow: hidden;
+  background: white;
+}
+
+.spot img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.spot-content {
   padding: 16px;
-
-  margin-bottom: 15px;
 }
 
-.admin-section h2 {
+.spot h3 {
   margin-top: 0;
 }
 
+.spot p {
+  color: #6b7280;
+  line-height: 1.5;
+}
 
-/* Admin Statistiken */
+.category,
+.popup-category {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.creator {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 12px 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 5000;
+}
+
+.modal-box {
+  background: white;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 18px;
+  padding: 25px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box input,
+.modal-box textarea,
+.modal-box select {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font: inherit;
+}
+
+.modal-box textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.modal-close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  background: #f3f4f6;
+}
+
+.selected-location {
+  font-weight: 700;
+  margin-top: 15px;
+}
+
+.hint {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.status {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111827;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 12px;
+  display: none;
+  z-index: 9999;
+  max-width: 90%;
+  text-align: center;
+}
+
+.empty {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+}
+
+.admin-section {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
 
 .admin-stats {
   display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
 }
 
 .admin-stat {
-  background: #101014;
-
-  border:
-    1px solid #29292f;
-
-  border-radius: 13px;
-
-  padding: 15px;
-
+  padding: 20px;
+  border-radius: 14px;
+  background: #f3f4f6;
   text-align: center;
 }
 
 .admin-stat strong {
   display: block;
-
-  font-size: 25px;
-
-  color: #4ade80;
+  font-size: 28px;
 }
 
 .admin-stat span {
-  display: block;
-
-  margin-top: 4px;
-
-  color: #888;
-
-  font-size: 12px;
+  color: #6b7280;
 }
 
-
-/* Admin User */
-
-.admin-user {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 12px;
-
-  padding: 13px;
-
-  margin-bottom: 8px;
-
-  background: #101014;
-
-  border:
-    1px solid #29292f;
-
-  border-radius: 13px;
-}
-
-.admin-user-role {
-  color: #888;
-
-  font-size: 12px;
-
-  margin-top: 4px;
-}
-
-.admin-action-btn {
-  background: #24242a;
-
-  border:
-    1px solid #383840;
-
-  font-size: 12px;
-
-  white-space: nowrap;
-}
-
-
-/* Admin Spot */
-
+.admin-user,
 .admin-spot {
   display: flex;
-
-  align-items: center;
-
   justify-content: space-between;
-
-  gap: 12px;
-
-  padding: 13px;
-
-  margin-bottom: 8px;
-
-  background: #101014;
-
-  border:
-    1px solid #29292f;
-
-  border-radius: 13px;
+  gap: 15px;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
 }
 
-.admin-spot-info {
-  color: #888;
-
-  font-size: 12px;
-
-  margin-top: 4px;
+.admin-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.admin-delete-btn {
-  background: #2b171b;
-
-  color: #ff667c;
-
-  border:
-    1px solid #54252d;
-
-  font-size: 12px;
-
-  white-space: nowrap;
-}
-
-.admin-delete-btn:hover {
-  background: #401c23;
-}
-
-.admin-error {
-  padding: 20px;
-
-  background: #2b171b;
-
-  border:
-    1px solid #54252d;
-
-  border-radius: 14px;
-
-  color: #ff7188;
+.admin-user-info span {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .admin-loading {
-  padding: 30px;
-
-  text-align: center;
-
-  color: #888;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
-
-/* =====================================================
-   SCROLLBAR
-===================================================== */
-
-::-webkit-scrollbar {
-  width: 8px;
+.map-popup {
+  min-width: 180px;
 }
 
-::-webkit-scrollbar-track {
-  background: #0d0d0f;
+.popup-likes {
+  margin: 10px 0;
+  font-size: 15px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #33333a;
+@media (max-width: 700px) {
 
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #44444c;
-}
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media (max-width: 600px) {
-
-  .header {
-    padding: 14px;
-  }
-
-  .header h1 {
-    font-size: 21px;
-  }
-
-  .top-buttons {
-    gap: 6px;
-  }
-
-  .top-buttons button {
-    padding: 11px 9px;
-
-    font-size: 13px;
-  }
-
-  #map {
-    height: 55vh;
-
-    min-height: 350px;
-  }
-
-  .panel {
-    padding: 13px;
-  }
-
-  .modal {
+  header {
     padding: 10px;
   }
 
-  .modal-box {
-    padding: 16px;
-
-    border-radius: 17px;
-
-    max-height: 94vh;
+  .logo {
+    font-size: 15px;
   }
 
-  .modal-actions {
-    flex-direction: column;
+  .header-buttons {
+    gap: 4px;
+  }
+
+  button {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  #map {
+    height: 400px;
   }
 
   .admin-stats {
@@ -1024,31 +336,8 @@ input[type="file"] {
 
   .admin-user,
   .admin-spot {
-    align-items: flex-start;
-
     flex-direction: column;
-  }
-
-  .admin-action-btn,
-  .admin-delete-btn {
-    width: 100%;
-  }
-
-}
-
-
-/* =====================================================
-   VERY SMALL PHONES
-===================================================== */
-
-@media (max-width: 380px) {
-
-  .top-buttons {
-    flex-direction: column;
-  }
-
-  .top-buttons button {
-    width: 100%;
+    align-items: stretch;
   }
 
 }
