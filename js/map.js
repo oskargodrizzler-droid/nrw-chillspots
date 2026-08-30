@@ -1,36 +1,42 @@
 // ===============================
-// MAP.JS
+// MAP
 // ===============================
 
 let map = null;
+
 let markers = [];
 
 let selectedLat = null;
 let selectedLng = null;
+
 let selectedMarker = null;
 
 
 // ===============================
-// KARTE INITIALISIEREN
+// INIT
 // ===============================
 
 function initMap() {
 
-  const mapElement = document.getElementById("map");
+  const element =
+    document.getElementById("map");
 
-  if (!mapElement) {
-    console.error("❌ #map nicht gefunden");
+
+  if (!element) {
     return;
   }
+
 
   if (map) {
     return;
   }
 
-  map = L.map("map").setView(
-    [51.48, 7.22],
-    10
-  );
+
+  map =
+    L.map("map").setView(
+      [51.48, 7.22],
+      10
+    );
 
 
   L.tileLayer(
@@ -42,70 +48,75 @@ function initMap() {
   ).addTo(map);
 
 
-  // ===============================
-  // AUF KARTE KLICKEN
-  // ===============================
+  map.on(
+    "click",
+    function (event) {
 
-  map.on("click", function(e) {
+      selectedLat =
+        event.latlng.lat;
 
-    selectedLat = e.latlng.lat;
-    selectedLng = e.latlng.lng;
+      selectedLng =
+        event.latlng.lng;
 
 
-    // alten Auswahl-Marker entfernen
+      if (selectedMarker) {
 
-    if (selectedMarker) {
-      map.removeLayer(selectedMarker);
+        map.removeLayer(
+          selectedMarker
+        );
+
+      }
+
+
+      selectedMarker =
+        L.marker([
+          selectedLat,
+          selectedLng
+        ]).addTo(map);
+
+
+      selectedMarker
+        .bindPopup(
+          "📍 Ausgewählter Standort"
+        )
+        .openPopup();
+
+
+      const text =
+        document.getElementById(
+          "selectedLocation"
+        );
+
+
+      if (text) {
+
+        text.textContent =
+          `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+
+      }
+
     }
-
-
-    // neuen Marker setzen
-
-    selectedMarker =
-      L.marker([
-        selectedLat,
-        selectedLng
-      ]).addTo(map);
-
-
-    selectedMarker.bindPopup(
-      "📍 Ausgewählter Standort"
-    );
-
-
-    // Text im Spot-Modal aktualisieren
-
-    const locationText =
-      document.getElementById(
-        "selectedLocation"
-      );
-
-
-    if (locationText) {
-
-      locationText.textContent =
-        `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
-
-    }
-
-  });
+  );
 
 
   renderMarkers();
+
 }
 
 
 
 // ===============================
-// STANDORT VERWENDEN
+// MEIN STANDORT
 // ===============================
 
 function useMyLocation() {
 
-  if (!navigator.geolocation) {
+  if (
+    !navigator.geolocation
+  ) {
 
     showStatus(
-      "❌ Dein Browser unterstützt keinen Standort"
+      "❌ Standort wird nicht unterstützt"
     );
 
     return;
@@ -119,7 +130,7 @@ function useMyLocation() {
 
   navigator.geolocation.getCurrentPosition(
 
-    function(position) {
+    function (position) {
 
       selectedLat =
         position.coords.latitude;
@@ -127,8 +138,6 @@ function useMyLocation() {
       selectedLng =
         position.coords.longitude;
 
-
-      // Karte zum Standort bewegen
 
       if (map) {
 
@@ -143,9 +152,7 @@ function useMyLocation() {
       }
 
 
-      // alten Marker entfernen
-
-      if (selectedMarker && map) {
+      if (selectedMarker) {
 
         map.removeLayer(
           selectedMarker
@@ -154,35 +161,29 @@ function useMyLocation() {
       }
 
 
-      // neuen Marker erstellen
-
-      if (map) {
-
-        selectedMarker =
-          L.marker([
-            selectedLat,
-            selectedLng
-          ]).addTo(map);
+      selectedMarker =
+        L.marker([
+          selectedLat,
+          selectedLng
+        ]).addTo(map);
 
 
-        selectedMarker.bindPopup(
+      selectedMarker
+        .bindPopup(
           "📍 Dein Standort"
-        ).openPopup();
+        )
+        .openPopup();
 
-      }
 
-
-      // Modal aktualisieren
-
-      const locationText =
+      const text =
         document.getElementById(
           "selectedLocation"
         );
 
 
-      if (locationText) {
+      if (text) {
 
-        locationText.textContent =
+        text.textContent =
           "📍 Dein Standort ausgewählt";
 
       }
@@ -195,44 +196,29 @@ function useMyLocation() {
     },
 
 
-    function(error) {
+    function (error) {
 
       console.error(
-        "Geolocation Fehler:",
+        "GEOLOCATION:",
         error
       );
 
 
-      let message =
-        "❌ Standort konnte nicht abgerufen werden";
-
-
       if (error.code === 1) {
 
-        message =
-          "❌ Standortzugriff wurde verweigert";
+        showStatus(
+          "❌ Standortzugriff verweigert"
+        );
+
+      } else {
+
+        showStatus(
+          "❌ Standort konnte nicht ermittelt werden"
+        );
 
       }
-
-      if (error.code === 2) {
-
-        message =
-          "❌ Standort ist momentan nicht verfügbar";
-
-      }
-
-      if (error.code === 3) {
-
-        message =
-          "❌ Standortabfrage dauerte zu lange";
-
-      }
-
-
-      showStatus(message);
 
     },
-
 
     {
       enableHighAccuracy: true,
@@ -247,7 +233,7 @@ function useMyLocation() {
 
 
 // ===============================
-// MARKER VON SPOTS
+// SPOT MARKER
 // ===============================
 
 async function renderMarkers() {
@@ -257,82 +243,58 @@ async function renderMarkers() {
   }
 
 
-  // alte Spot-Marker entfernen
-
   markers.forEach(
-    marker => map.removeLayer(marker)
+    marker =>
+      map.removeLayer(marker)
   );
+
 
   markers = [];
 
 
-  if (!Array.isArray(spots)) {
+  if (
+    !Array.isArray(spots)
+  ) {
     return;
   }
 
 
-  for (const spot of spots) {
+  for (
+    const spot of spots
+  ) {
 
     if (
-      spot.latitude === null ||
-      spot.latitude === undefined ||
-      spot.longitude === null ||
-      spot.longitude === undefined
+      spot.latitude == null ||
+      spot.longitude == null
     ) {
-
       continue;
-
     }
 
 
     let likeCount = 0;
 
 
-    // ===============================
-    // LIKES
-    // ===============================
-
-    try {
-
-      const {
-        count,
-        error
-      } =
-        await supabaseClient
-          .from("likes")
-          .select(
-            "*",
-            {
-              count: "exact",
-              head: true
-            }
-          )
-          .eq(
-            "spot_id",
-            spot.id
-          );
+    const {
+      count
+    } =
+      await supabaseClient
+        .from("likes")
+        .select(
+          "*",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "spot_id",
+          spot.id
+        );
 
 
-      if (!error) {
+    likeCount =
+      count || 0;
 
-        likeCount =
-          count || 0;
-
-      }
-
-    } catch (error) {
-
-      console.error(
-        "Like Count Fehler:",
-        error
-      );
-
-    }
-
-
-    // ===============================
-    // MARKER
-    // ===============================
 
     const marker =
       L.marker([
@@ -340,10 +302,6 @@ async function renderMarkers() {
         Number(spot.longitude)
       ]).addTo(map);
 
-
-    // ===============================
-    // POPUP
-    // ===============================
 
     marker.bindPopup(`
 
@@ -361,27 +319,15 @@ async function renderMarkers() {
         </p>
 
         <div class="popup-likes">
-
-          ❤️
-          <strong>
-            ${likeCount}
-          </strong>
-
-          ${
-            likeCount === 1
-              ? "Like"
-              : "Likes"
-          }
-
+          ❤️ <strong>${likeCount}</strong>
+          ${likeCount === 1 ? "Like" : "Likes"}
         </div>
 
         <span class="popup-category">
-
           🏷️ ${escapeHtml(
             spot.category ||
             "Sonstiges"
           )}
-
         </span>
 
       </div>
@@ -398,7 +344,7 @@ async function renderMarkers() {
 
 
 // ===============================
-// AUSGEWÄHLTEN STANDORT LÖSCHEN
+// CLEAR LOCATION
 // ===============================
 
 function clearSelectedLocation() {
@@ -422,15 +368,15 @@ function clearSelectedLocation() {
   selectedMarker = null;
 
 
-  const locationText =
+  const text =
     document.getElementById(
       "selectedLocation"
     );
 
 
-  if (locationText) {
+  if (text) {
 
-    locationText.textContent =
+    text.textContent =
       "Noch kein Standort ausgewählt";
 
   }
@@ -440,32 +386,38 @@ function clearSelectedLocation() {
 
 
 // ===============================
-// KARTE AKTUALISIEREN
+// ESCAPE
 // ===============================
 
-async function refreshMapMarkers() {
+function escapeHtml(value) {
 
-  if (
-    typeof loadSpots === "function"
-  ) {
+  return String(
+    value ?? ""
+  )
 
-    await loadSpots();
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
 
-  }
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
-
-
-
-// ===============================
-// START
-// ===============================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  function() {
-
-    initMap();
-
-  }
-);
