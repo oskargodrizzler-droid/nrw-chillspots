@@ -2,135 +2,132 @@
 <html lang="de">
 
 <head>
+
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Mein Profil · NRW Chillspots</title>
+  <title>Profil · NRW Chillspots</title>
 
   <link
     rel="stylesheet"
     href="../style.css"
   >
+
 </head>
 
 <body>
 
-  <main class="panel" style="max-width: 600px;">
 
-    <div class="admin-section">
-
-      <div class="section-title">
-
-        <h1>👤 Mein Profil</h1>
-
-        <button
-          class="secondary"
-          onclick="goHome()"
-        >
-          ✕
-        </button>
-
-      </div>
+<main
+  class="panel"
+  style="max-width:600px;"
+>
 
 
-      <p
-        id="profileEmail"
-        class="profile-email"
-      >
-        Wird geladen...
-      </p>
+  <div class="section-title">
+
+    <h1>
+      👤 Mein Profil
+    </h1>
+
+    <button
+      class="secondary"
+      onclick="window.location.href='../index.html'"
+    >
+      ✕
+    </button>
+
+  </div>
 
 
-      <label for="nickname">
-        Nickname
-      </label>
-
-      <input
-        id="nickname"
-        type="text"
-        maxlength="30"
-        minlength="2"
-        placeholder="Dein Nickname"
-        autocomplete="nickname"
-      >
+  <section class="admin-section">
 
 
-      <p
-        style="
-          color:#777;
-          font-size:13px;
-          line-height:1.5;
-        "
-      >
-        Dieser Name wird bei deinen Chillspots
-        für andere angezeigt.
-      </p>
+    <p id="profileEmail">
+      ⏳
+    </p>
 
 
-      <button
-        class="primary full-button"
-        onclick="saveProfile()"
-      >
-        💾 Nickname speichern
-      </button>
+    <label>
+      Nickname
+    </label>
 
 
-      <button
-        class="secondary full-button"
-        onclick="goHome()"
-      >
-        ← Zurück zu den Spots
-      </button>
-
-    </div>
-
-  </main>
-
-
-  <div
-    id="status"
-    class="status"
-  ></div>
+    <input
+      id="nickname"
+      type="text"
+      maxlength="30"
+      minlength="2"
+      placeholder="Dein Nickname"
+      style="
+        width:100%;
+        padding:12px;
+        margin-top:8px;
+        border-radius:10px;
+        border:1px solid #ddd;
+      "
+    >
 
 
-  <!-- SUPABASE -->
+    <p class="hint">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+      Dieser Name wird bei deinen
+      Spots angezeigt.
 
-
-  <!-- APP -->
-
-  <script src="../js/app.js"></script>
+    </p>
 
 
-  <!-- AUTH -->
-
-  <script src="../js/auth.js"></script>
-
-
-  <!-- PROFILE -->
-
-  <script src="../js/profiles.js"></script>
+    <button
+      class="primary full-button"
+      onclick="saveProfile()"
+    >
+      💾 Speichern
+    </button>
 
 
-  <script>
+    <button
+      class="secondary full-button"
+      onclick="window.location.href='../index.html'"
+    >
+      ← Zurück
+    </button>
 
-    function goHome() {
-      window.location.href = "../index.html";
-    }
+
+  </section>
 
 
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
-        loadProfilePage();
-      }
-    );
+</main>
 
-  </script>
+
+<div
+  id="status"
+  class="status"
+></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="../js/app.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/profiles.js"></script>
+
+
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    loadProfilePage();
+
+  }
+);
+
+</script>
 
 </body>
 
