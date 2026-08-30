@@ -10,39 +10,44 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
+
 let map = null;
+
 let selectedLat = null;
 let selectedLng = null;
 let selectedMarker = null;
 
 let markers = [];
+
 let spots = [];
 
 let currentUser = null;
 let currentProfile = null;
 
 
-// ===============================
+// ========================================
 // START
-// ===============================
+// ========================================
 
 document.addEventListener(
   "DOMContentLoaded",
   async () => {
 
     initMap();
+
     setupButtons();
 
     await loadUser();
+
     await loadSpots();
 
   }
 );
 
 
-// ===============================
-// KARTE
-// ===============================
+// ========================================
+// MAP
+// ========================================
 
 function initMap() {
 
@@ -51,83 +56,74 @@ function initMap() {
 
   if (!mapElement) return;
 
+
   map =
     L.map("map").setView(
       [51.48, 7.22],
       10
     );
 
+
   L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
       attribution:
         "&copy; OpenStreetMap contributors",
+
       maxZoom: 19
     }
   ).addTo(map);
 
 
-  map.on("click", (event) => {
+  map.on(
+    "click",
+    (event) => {
 
-    selectedLat =
-      event.latlng.lat;
+      selectedLat =
+        event.latlng.lat;
 
-    selectedLng =
-      event.latlng.lng;
+      selectedLng =
+        event.latlng.lng;
 
-    setSelectedMarker(
-      selectedLat,
-      selectedLng
-    );
 
-    const location =
-      document.getElementById(
-        "selectedLocation"
-      );
+      if (selectedMarker) {
 
-    if (location) {
+        map.removeLayer(
+          selectedMarker
+        );
 
-      location.textContent =
-        `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+      }
+
+
+      selectedMarker =
+        L.marker([
+          selectedLat,
+          selectedLng
+        ]).addTo(map);
+
+
+      const location =
+        document.getElementById(
+          "selectedLocation"
+        );
+
+
+      if (location) {
+
+        location.textContent =
+          `📍 ${selectedLat.toFixed(5)}, ${selectedLng.toFixed(5)}`;
+
+      }
 
     }
-
-  });
-
-}
-
-
-// ===============================
-// MARKER
-// ===============================
-
-function setSelectedMarker(
-  lat,
-  lng
-) {
-
-  if (!map) return;
-
-  if (selectedMarker) {
-
-    map.removeLayer(
-      selectedMarker
-    );
-
-  }
-
-  selectedMarker =
-    L.marker([
-      lat,
-      lng
-    ]).addTo(map);
+  );
 
 }
 
 
-// ===============================
+// ========================================
 // BUTTONS
-// ===============================
+// ========================================
 
 function setupButtons() {
 
@@ -160,11 +156,11 @@ function setupButtons() {
     publishSpotBtn:
       createSpot,
 
-    loginBtn:
-      signIn,
-
     registerBtn:
       signUp,
+
+    loginBtn:
+      signIn,
 
     logoutBtn:
       logout,
@@ -177,16 +173,18 @@ function setupButtons() {
 
   Object.entries(buttons)
     .forEach(
-      ([id, functionToRun]) => {
+      ([id, fn]) => {
 
         const button =
           document.getElementById(id);
 
+
         if (!button) return;
+
 
         button.addEventListener(
           "click",
-          functionToRun
+          fn
         );
 
       }
@@ -198,6 +196,7 @@ function setupButtons() {
       "search"
     );
 
+
   if (search) {
 
     search.addEventListener(
@@ -208,63 +207,69 @@ function setupButtons() {
   }
 
 
-  // Klick außerhalb des Fensters
   document
     .querySelectorAll(".modal")
-    .forEach((modal) => {
+    .forEach(
+      (modal) => {
 
-      modal.addEventListener(
-        "click",
-        (event) => {
+        modal.addEventListener(
+          "click",
+          (event) => {
 
-          if (
-            event.target === modal
-          ) {
+            if (
+              event.target === modal
+            ) {
 
-            modal.classList.remove(
-              "show"
-            );
+              modal.classList.remove(
+                "show"
+              );
+
+            }
 
           }
+        );
 
-        }
-      );
-
-    });
+      }
+    );
 
 }
 
 
-// ===============================
+// ========================================
 // STATUS
-// ===============================
+// ========================================
 
 function showStatus(
   message
 ) {
 
-  const status =
+  const element =
     document.getElementById(
       "status"
     );
 
-  if (!status) return;
 
-  status.textContent =
+  if (!element) return;
+
+
+  element.textContent =
     message;
 
-  status.style.display =
+
+  element.style.display =
     "block";
+
 
   clearTimeout(
     window.statusTimer
   );
 
+
   window.statusTimer =
     setTimeout(
       () => {
 
-        status.style.display =
+        element.style.display =
           "none";
 
       },
@@ -274,9 +279,9 @@ function showStatus(
 }
 
 
-// ===============================
+// ========================================
 // MODALS
-// ===============================
+// ========================================
 
 function openSpotModal() {
 
@@ -290,6 +295,7 @@ function openSpotModal() {
 
     return;
   }
+
 
   document
     .getElementById(
@@ -319,6 +325,7 @@ function openAuthModal() {
     )
     ?.classList.add("show");
 
+
   updateAccountUI();
 
 }
@@ -346,11 +353,13 @@ function openAdminPanel() {
     return;
   }
 
+
   document
     .getElementById(
       "adminModal"
     )
     ?.classList.add("show");
+
 
   renderAdminPanel();
 
@@ -368,9 +377,9 @@ function closeAdminPanel() {
 }
 
 
-// ===============================
-// USER LADEN
-// ===============================
+// ========================================
+// AUTH
+// ========================================
 
 async function loadUser() {
 
@@ -389,7 +398,9 @@ async function loadUser() {
       "AuthSessionMissingError"
   ) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
   }
 
@@ -411,10 +422,6 @@ async function loadUser() {
 
 }
 
-
-// ===============================
-// PROFIL
-// ===============================
 
 async function ensureProfile() {
 
@@ -477,7 +484,7 @@ async function loadProfile() {
   if (error) {
 
     console.error(
-      "Profil:",
+      "Profil konnte nicht geladen werden:",
       error
     );
 
@@ -491,10 +498,6 @@ async function loadProfile() {
 }
 
 
-// ===============================
-// ACCOUNT UI
-// ===============================
-
 function updateAccountUI() {
 
   const info =
@@ -502,25 +505,30 @@ function updateAccountUI() {
       "accountInfo"
     );
 
+
   const loggedOut =
     document.getElementById(
       "loggedOutArea"
     );
+
 
   const loggedIn =
     document.getElementById(
       "loggedInArea"
     );
 
+
   const email =
     document.getElementById(
       "loggedInEmail"
     );
 
+
   const adminButton =
     document.getElementById(
       "adminButton"
     );
+
 
   const nickname =
     document.getElementById(
@@ -534,17 +542,21 @@ function updateAccountUI() {
       info.textContent =
         "Nicht eingeloggt";
 
+
     if (loggedOut)
       loggedOut.style.display =
         "block";
+
 
     if (loggedIn)
       loggedIn.style.display =
         "none";
 
+
     if (adminButton)
       adminButton.style.display =
         "none";
+
 
     return;
   }
@@ -600,37 +612,26 @@ function updateAccountUI() {
 }
 
 
-// ===============================
-// ADMIN
-// ===============================
-
-function isAdmin() {
-
-  return (
-    currentProfile?.is_admin ===
-      true ||
-    currentProfile?.role ===
-      "admin"
-  );
-
-}
-
-
-// ===============================
-// REGISTRIEREN
-// ===============================
+// ========================================
+// REGISTER
+// ========================================
 
 async function signUp() {
 
   const email =
     document
-      .getElementById("email")
+      .getElementById(
+        "email"
+      )
       ?.value
       .trim();
 
+
   const password =
     document
-      .getElementById("password")
+      .getElementById(
+        "password"
+      )
       ?.value;
 
 
@@ -663,18 +664,22 @@ async function signUp() {
     data,
     error
   } =
-    await supabaseClient.auth.signUp({
+    await supabaseClient
+      .auth
+      .signUp({
 
-      email,
-      password
+        email,
 
-    });
+        password
+
+      });
 
 
   if (error) {
 
     showStatus(
-      "❌ " + error.message
+      "❌ " +
+      error.message
     );
 
     return;
@@ -682,12 +687,13 @@ async function signUp() {
 
 
   if (
-    data.user &&
-    data.session
+    data?.user &&
+    data?.session
   ) {
 
     currentUser =
       data.user;
+
 
     await ensureProfile();
 
@@ -695,36 +701,43 @@ async function signUp() {
 
     updateAccountUI();
 
+
     showStatus(
       "✅ Account erstellt!"
     );
+
 
     return;
   }
 
 
   showStatus(
-    "✅ Account erstellt! Prüfe deine E-Mail zur Bestätigung."
+    "✅ Account erstellt! Prüfe deine E-Mail."
   );
 
 }
 
 
-// ===============================
+// ========================================
 // LOGIN
-// ===============================
+// ========================================
 
 async function signIn() {
 
   const email =
     document
-      .getElementById("email")
+      .getElementById(
+        "email"
+      )
       ?.value
       .trim();
 
+
   const password =
     document
-      .getElementById("password")
+      .getElementById(
+        "password"
+      )
       ?.value;
 
 
@@ -752,6 +765,7 @@ async function signIn() {
       .signInWithPassword({
 
         email,
+
         password
 
       });
@@ -760,7 +774,8 @@ async function signIn() {
   if (error) {
 
     showStatus(
-      "❌ " + error.message
+      "❌ " +
+      error.message
     );
 
     return;
@@ -779,6 +794,7 @@ async function signIn() {
 
   closeAuthModal();
 
+
   showStatus(
     "✅ Eingeloggt!"
   );
@@ -786,9 +802,9 @@ async function signIn() {
 }
 
 
-// ===============================
+// ========================================
 // LOGOUT
-// ===============================
+// ========================================
 
 async function logout() {
 
@@ -803,7 +819,8 @@ async function logout() {
   if (error) {
 
     showStatus(
-      "❌ " + error.message
+      "❌ " +
+      error.message
     );
 
     return;
@@ -816,7 +833,9 @@ async function logout() {
   currentProfile =
     null;
 
+
   updateAccountUI();
+
 
   showStatus(
     "👋 Ausgeloggt"
@@ -825,9 +844,9 @@ async function logout() {
 }
 
 
-// ===============================
+// ========================================
 // AUTH STATE
-// ===============================
+// ========================================
 
 supabaseClient.auth.onAuthStateChange(
   async (
@@ -859,9 +878,9 @@ supabaseClient.auth.onAuthStateChange(
 );
 
 
-// ===============================
+// ========================================
 // NICKNAME
-// ===============================
+// ========================================
 
 async function saveNickname() {
 
@@ -875,13 +894,12 @@ async function saveNickname() {
   }
 
 
-  const input =
-    document.getElementById(
-      "nicknameInput"
-    );
-
   const nickname =
-    input?.value
+    document
+      .getElementById(
+        "nicknameInput"
+      )
+      ?.value
       .trim();
 
 
@@ -904,14 +922,12 @@ async function saveNickname() {
   ) {
 
     showStatus(
-      "❌ Nickname enthält ungültige Zeichen"
+      "❌ Ungültige Zeichen im Nickname"
     );
 
     return;
   }
 
-
-  // Prüfen, ob Nickname schon benutzt wird
 
   const {
     data: existing,
@@ -997,6 +1013,7 @@ async function saveNickname() {
 
   await loadSpots();
 
+
   showStatus(
     "✅ Nickname gespeichert!"
   );
@@ -1004,9 +1021,9 @@ async function saveNickname() {
 }
 
 
-// ===============================
-// STANDORT
-// ===============================
+// ========================================
+// LOCATION
+// ========================================
 
 function useMyLocation() {
 
@@ -1038,23 +1055,29 @@ function useMyLocation() {
         position.coords.longitude;
 
 
-      setSelectedMarker(
-        selectedLat,
-        selectedLng
-      );
+      if (selectedMarker) {
 
-
-      if (map) {
-
-        map.setView(
-          [
-            selectedLat,
-            selectedLng
-          ],
-          15
+        map.removeLayer(
+          selectedMarker
         );
 
       }
+
+
+      selectedMarker =
+        L.marker([
+          selectedLat,
+          selectedLng
+        ]).addTo(map);
+
+
+      map.setView(
+        [
+          selectedLat,
+          selectedLng
+        ],
+        15
+      );
 
 
       const location =
@@ -1081,10 +1104,11 @@ function useMyLocation() {
     () => {
 
       showStatus(
-        "❌ Standortzugriff wurde verweigert"
+        "❌ Standortzugriff verweigert"
       );
 
     },
+
 
     {
       enableHighAccuracy:
@@ -1092,6 +1116,7 @@ function useMyLocation() {
 
       timeout:
         10000
+
     }
 
   );
@@ -1099,9 +1124,9 @@ function useMyLocation() {
 }
 
 
-// ===============================
-// SPOT ERSTELLEN
-// ===============================
+// ========================================
+// CREATE SPOT
+// ========================================
 
 async function createSpot() {
 
@@ -1152,7 +1177,7 @@ async function createSpot() {
   if (!name) {
 
     showStatus(
-      "❌ Name eingeben"
+      "❌ Gib einen Namen ein"
     );
 
     return;
@@ -1165,7 +1190,21 @@ async function createSpot() {
   ) {
 
     showStatus(
-      "❌ Standort auswählen"
+      "❌ Wähle zuerst einen Standort"
+    );
+
+    return;
+  }
+
+
+  if (
+    photo &&
+    photo.size >
+      8 * 1024 * 1024
+  ) {
+
+    showStatus(
+      "❌ Das Foto darf maximal 8 MB groß sein"
     );
 
     return;
@@ -1181,22 +1220,9 @@ async function createSpot() {
     null;
 
 
-  // FOTO
+  // FOTO HOCHLADEN
 
   if (photo) {
-
-    if (
-      photo.size >
-      8 * 1024 * 1024
-    ) {
-
-      showStatus(
-        "❌ Foto darf maximal 8 MB groß sein"
-      );
-
-      return;
-    }
-
 
     const extension =
       photo.name
@@ -1205,7 +1231,7 @@ async function createSpot() {
         .toLowerCase();
 
 
-    const path =
+    const filePath =
       `${currentUser.id}/${Date.now()}.${extension}`;
 
 
@@ -1216,9 +1242,10 @@ async function createSpot() {
         .storage
         .from("spot-photos")
         .upload(
-          path,
+          filePath,
           photo,
           {
+
             cacheControl:
               "3600",
 
@@ -1227,6 +1254,7 @@ async function createSpot() {
 
             contentType:
               photo.type
+
           }
         );
 
@@ -1247,7 +1275,7 @@ async function createSpot() {
         .storage
         .from("spot-photos")
         .getPublicUrl(
-          path
+          filePath
         )
         .data
         .publicUrl;
@@ -1255,7 +1283,7 @@ async function createSpot() {
   }
 
 
-  // SPOT
+  // SPOT SPEICHERN
 
   const {
     data: spot,
@@ -1296,32 +1324,46 @@ async function createSpot() {
   }
 
 
-  // FOTO DB
+  // FOTO MIT SPOT VERKNÜPFEN
 
   if (
     photoUrl &&
     spot
   ) {
 
-    await supabaseClient
-      .from("spot_photos")
-      .insert({
+    const {
+      error:
+        photoError
+    } =
+      await supabaseClient
+        .from("spot_photos")
+        .insert({
 
-        spot_id:
-          spot.id,
+          spot_id:
+            spot.id,
 
-        image_url:
-          photoUrl,
+          image_url:
+            photoUrl,
 
-        user_id:
-          currentUser.id
+          user_id:
+            currentUser.id
 
-      });
+        });
+
+
+    if (photoError) {
+
+      console.error(
+        photoError
+      );
+
+    }
 
   }
 
 
   closeSpotModal();
+
 
   selectedLat =
     null;
@@ -1342,25 +1384,44 @@ async function createSpot() {
   }
 
 
-  document.getElementById(
-    "spotName"
-  ).value = "";
+  const fields = [
 
+    "spotName",
 
-  document.getElementById(
-    "spotDescription"
-  ).value = "";
+    "spotDescription",
 
-
-  document.getElementById(
     "spotPhoto"
-  ).value = "";
+
+  ];
 
 
-  document.getElementById(
-    "selectedLocation"
-  ).textContent =
-    "📍 Noch kein Standort ausgewählt";
+  fields.forEach(
+    (id) => {
+
+      const element =
+        document.getElementById(
+          id
+        );
+
+      if (element)
+        element.value = "";
+
+    }
+  );
+
+
+  const location =
+    document.getElementById(
+      "selectedLocation"
+    );
+
+
+  if (location) {
+
+    location.textContent =
+      "📍 Noch kein Standort ausgewählt";
+
+  }
 
 
   showStatus(
@@ -1373,9 +1434,9 @@ async function createSpot() {
 }
 
 
-// ===============================
-// SPOTS LADEN
-// ===============================
+// ========================================
+// LOAD SPOTS
+// ========================================
 
 async function loadSpots() {
 
@@ -1401,9 +1462,11 @@ async function loadSpots() {
       error
     );
 
+
     showStatus(
       "❌ Spots konnten nicht geladen werden"
     );
+
 
     return;
   }
@@ -1420,14 +1483,14 @@ async function loadSpots() {
 }
 
 
-// ===============================
-// MARKER RENDERN
-// ===============================
+// ========================================
+// MARKERS
+// ========================================
 
 function renderMarkers() {
 
   markers.forEach(
-    marker => {
+    (marker) => {
 
       map.removeLayer(
         marker
@@ -1441,12 +1504,16 @@ function renderMarkers() {
 
 
   spots.forEach(
-    spot => {
+    (spot) => {
 
       if (
         spot.latitude === null ||
         spot.longitude === null
-      ) return;
+      ) {
+
+        return;
+
+      }
 
 
       const marker =
@@ -1491,9 +1558,9 @@ function renderMarkers() {
 }
 
 
-// ===============================
-// SPOTS ANZEIGEN
-// ===============================
+// ========================================
+// RENDER SPOTS
+// ========================================
 
 async function renderSpots() {
 
@@ -1506,7 +1573,7 @@ async function renderSpots() {
   if (!container) return;
 
 
-  const query =
+  const search =
     document
       .getElementById(
         "search"
@@ -1519,7 +1586,7 @@ async function renderSpots() {
 
   const filtered =
     spots.filter(
-      spot => {
+      (spot) => {
 
         const text =
           `${spot.name || ""}
@@ -1529,11 +1596,29 @@ async function renderSpots() {
 
 
         return text.includes(
-          query
+          search
         );
 
       }
     );
+
+
+  const count =
+    document.getElementById(
+      "spotCount"
+    );
+
+
+  if (count) {
+
+    count.textContent =
+      `${filtered.length} ${
+        filtered.length === 1
+          ? "Spot"
+          : "Spots"
+      }`;
+
+  }
 
 
   if (!filtered.length) {
@@ -1554,7 +1639,8 @@ async function renderSpots() {
 
   const ids =
     filtered.map(
-      spot => spot.id
+      spot =>
+        spot.id
     );
 
 
@@ -1588,6 +1674,45 @@ async function renderSpots() {
           "id",
           userIds
         );
+
+
+    if (result.error) {
+
+      console.error(
+        result.error
+      );
+
+    }
+
+
+    profiles =
+      result.data || [];
+
+  }
+
+
+  if (ids.length) {
+
+    const photoResult =
+      await supabaseClient
+        .from("spot_photos")
+        .select(
+          "id,nickname"
+        )
+        .in(
+          "id",
+          userIds
+        );
+
+
+    if (result.error) {
+
+      console.error(
+        result.error
+      );
+
+    }
+
 
     profiles =
       result.data || [];
@@ -1634,7 +1759,7 @@ async function renderSpots() {
   const profileMap =
     Object.fromEntries(
       profiles.map(
-        profile => [
+        (profile) => [
 
           profile.id,
 
@@ -1649,7 +1774,7 @@ async function renderSpots() {
 
 
   photos.forEach(
-    photo => {
+    (photo) => {
 
       if (
         !photoMap[
@@ -1671,11 +1796,11 @@ async function renderSpots() {
   container.innerHTML =
     filtered
       .map(
-        spot => {
+        (spot) => {
 
           const spotLikes =
             likes.filter(
-              like =>
+              (like) =>
                 like.spot_id ===
                 spot.id
             );
@@ -1684,7 +1809,7 @@ async function renderSpots() {
           const liked =
             !!currentUser &&
             spotLikes.some(
-              like =>
+              (like) =>
                 like.user_id ===
                 currentUser.id
             );
@@ -1719,14 +1844,21 @@ async function renderSpots() {
               ${
                 image
                   ? `
+
                     <img
-                      src="${escapeHtml(image)}"
-                      alt="Spot Foto"
+                      src="${escapeHtml(
+                        image
+                      )}"
+                      alt="Foto von ${escapeHtml(
+                        spot.name
+                      )}"
                       loading="lazy"
                     >
+
                   `
                   : ""
               }
+
 
               <div class="spot-content">
 
@@ -1761,9 +1893,11 @@ async function renderSpots() {
                 <div class="creator">
 
                   👤 Erstellt von:
-                  ${escapeHtml(
-                    nickname
-                  )}
+                  <strong>
+                    ${escapeHtml(
+                      nickname
+                    )}
+                  </strong>
 
                 </div>
 
@@ -1778,13 +1912,9 @@ async function renderSpots() {
 
                   type="button"
 
-                  onclick="
-                    toggleLike(
-                      '${escapeAttr(
-                        spot.id
-                      )}'
-                    )
-                  "
+                  data-like-id="${escapeHtml(
+                    spot.id
+                  )}"
 
                 >
 
@@ -1794,7 +1924,6 @@ async function renderSpots() {
                       ? "Geliked"
                       : "Like"
                   }
-
                   ·
                   ${spotLikes.length}
 
@@ -1811,13 +1940,9 @@ async function renderSpots() {
 
                         type="button"
 
-                        onclick="
-                          deleteSpot(
-                            '${escapeAttr(
-                              spot.id
-                            )}'
-                          )
-                        "
+                        data-delete-id="${escapeHtml(
+                          spot.id
+                        )}"
 
                       >
 
@@ -1839,12 +1964,60 @@ async function renderSpots() {
       )
       .join("");
 
+
+  // Like-Buttons
+
+  container
+    .querySelectorAll(
+      "[data-like-id]"
+    )
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            toggleLike(
+              button.dataset.likeId
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  // Delete-Buttons
+
+  container
+    .querySelectorAll(
+      "[data-delete-id]"
+    )
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            deleteSpot(
+              button.dataset.deleteId
+            );
+
+          }
+        );
+
+      }
+    );
+
 }
 
 
-// ===============================
+// ========================================
 // LIKE
-// ===============================
+// ========================================
 
 async function toggleLike(
   spotId
@@ -1894,7 +2067,8 @@ async function toggleLike(
   if (existing) {
 
     const {
-      error
+      error:
+        deleteError
     } =
       await supabaseClient
         .from("likes")
@@ -1905,11 +2079,11 @@ async function toggleLike(
         );
 
 
-    if (error) {
+    if (deleteError) {
 
       showStatus(
         "❌ " +
-        error.message
+        deleteError.message
       );
 
       return;
@@ -1923,7 +2097,8 @@ async function toggleLike(
   } else {
 
     const {
-      error
+      error:
+        insertError
     } =
       await supabaseClient
         .from("likes")
@@ -1938,11 +2113,11 @@ async function toggleLike(
         });
 
 
-    if (error) {
+    if (insertError) {
 
       showStatus(
         "❌ " +
-        error.message
+        insertError.message
       );
 
       return;
@@ -1961,9 +2136,9 @@ async function toggleLike(
 }
 
 
-// ===============================
-// SPOT LÖSCHEN
-// ===============================
+// ========================================
+// DELETE SPOT
+// ========================================
 
 async function deleteSpot(
   spotId
@@ -1972,7 +2147,7 @@ async function deleteSpot(
   if (!currentUser) {
 
     showStatus(
-      "❌ Bitte einloggen"
+      "❌ Bitte zuerst einloggen"
     );
 
     return;
@@ -1981,7 +2156,7 @@ async function deleteSpot(
 
   const spot =
     spots.find(
-      item =>
+      (item) =>
         String(item.id) ===
         String(spotId)
     );
@@ -1990,11 +2165,13 @@ async function deleteSpot(
   if (!spot) return;
 
 
-  if (
-    spot.user_id !==
-      currentUser.id &&
-    !isAdmin()
-  ) {
+  const allowed =
+    spot.user_id ===
+      currentUser.id ||
+    isAdmin();
+
+
+  if (!allowed) {
 
     showStatus(
       "❌ Keine Berechtigung"
@@ -2004,15 +2181,17 @@ async function deleteSpot(
   }
 
 
-  if (
-    !confirm(
+  const confirmed =
+    confirm(
       `Spot "${spot.name}" wirklich löschen?`
-    )
-  ) return;
+    );
+
+
+  if (!confirmed) return;
 
 
   showStatus(
-    "⏳ Lösche Spot..."
+    "⏳ Spot wird gelöscht..."
   );
 
 
@@ -2074,9 +2253,22 @@ async function deleteSpot(
 }
 
 
-// ===============================
-// ADMIN PANEL
-// ===============================
+// ========================================
+// ADMIN
+// ========================================
+
+function isAdmin() {
+
+  return (
+    currentProfile?.is_admin ===
+      true ||
+
+    currentProfile?.role ===
+      "admin"
+  );
+
+}
+
 
 async function renderAdminPanel() {
 
@@ -2098,80 +2290,98 @@ async function renderAdminPanel() {
   }
 
 
-  container.innerHTML = `
+  if (!spots.length) {
 
-    <h3>
-      📍 Alle Spots
-    </h3>
+    container.innerHTML = `
 
-    ${
-      spots.length
-        ? spots
-            .map(
-              spot => `
+      <div class="empty">
 
-                <div class="admin-user">
+        Keine Spots vorhanden.
 
-                  <strong>
+      </div>
 
-                    ${escapeHtml(
-                      spot.name
-                    )}
+    `;
 
-                  </strong>
-
-                  <br>
-
-                  <small>
-
-                    Erstellt von:
-                    ${escapeHtml(
-                      spot.user_id
-                    )}
-
-                  </small>
+    return;
+  }
 
 
-                  <button
+  container.innerHTML =
+    spots
+      .map(
+        (spot) => `
 
-                    class="delete-btn"
+          <div class="admin-user">
 
-                    type="button"
+            <strong>
 
-                    onclick="
-                      deleteSpot(
-                        '${escapeAttr(
-                          spot.id
-                        )}'
-                      )
-                    "
+              📍
+              ${escapeHtml(
+                spot.name
+              )}
 
-                  >
+            </strong>
 
-                    🗑️ Löschen
+            <small>
 
-                  </button>
+              User-ID:
+              ${escapeHtml(
+                spot.user_id
+              )}
 
-                </div>
+            </small>
 
-              `
-            )
-            .join("")
-        : `
-          <p style="color:#777">
-            Keine Spots vorhanden.
-          </p>
+
+            <button
+
+              class="delete-btn"
+
+              type="button"
+
+              data-admin-delete="${escapeHtml(
+                spot.id
+              )}"
+
+            >
+
+              🗑️ Spot löschen
+
+            </button>
+
+          </div>
+
         `
-    }
+      )
+      .join("");
 
-  `;
+
+  container
+    .querySelectorAll(
+      "[data-admin-delete]"
+    )
+    .forEach(
+      (button) => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            deleteSpot(
+              button.dataset.adminDelete
+            );
+
+          }
+        );
+
+      }
+    );
 
 }
 
 
-// ===============================
-// SICHERHEIT
-// ===============================
+// ========================================
+// ESCAPE
+// ========================================
 
 function escapeHtml(
   value
@@ -2204,24 +2414,9 @@ function escapeHtml(
 }
 
 
-function escapeAttr(
-  value
-) {
-
-  return String(
-    value ?? ""
-  )
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-
-}
-
-
-// ===============================
+// ========================================
 // GLOBAL
-// ===============================
+// ========================================
 
 window.signUp =
   signUp;
