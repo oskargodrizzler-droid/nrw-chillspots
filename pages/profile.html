@@ -1,1 +1,137 @@
-d
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Mein Profil · NRW Chillspots</title>
+
+  <link
+    rel="stylesheet"
+    href="../style.css"
+  >
+</head>
+
+<body>
+
+  <main class="panel" style="max-width: 600px;">
+
+    <div class="admin-section">
+
+      <div class="section-title">
+
+        <h1>👤 Mein Profil</h1>
+
+        <button
+          class="secondary"
+          onclick="goHome()"
+        >
+          ✕
+        </button>
+
+      </div>
+
+
+      <p
+        id="profileEmail"
+        class="profile-email"
+      >
+        Wird geladen...
+      </p>
+
+
+      <label for="nickname">
+        Nickname
+      </label>
+
+      <input
+        id="nickname"
+        type="text"
+        maxlength="30"
+        minlength="2"
+        placeholder="Dein Nickname"
+        autocomplete="nickname"
+      >
+
+
+      <p
+        style="
+          color:#777;
+          font-size:13px;
+          line-height:1.5;
+        "
+      >
+        Dieser Name wird bei deinen Chillspots
+        für andere angezeigt.
+      </p>
+
+
+      <button
+        class="primary full-button"
+        onclick="saveProfile()"
+      >
+        💾 Nickname speichern
+      </button>
+
+
+      <button
+        class="secondary full-button"
+        onclick="goHome()"
+      >
+        ← Zurück zu den Spots
+      </button>
+
+    </div>
+
+  </main>
+
+
+  <div
+    id="status"
+    class="status"
+  ></div>
+
+
+  <!-- SUPABASE -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <!-- APP -->
+
+  <script src="../js/app.js"></script>
+
+
+  <!-- AUTH -->
+
+  <script src="../js/auth.js"></script>
+
+
+  <!-- PROFILE -->
+
+  <script src="../js/profiles.js"></script>
+
+
+  <script>
+
+    function goHome() {
+      window.location.href = "../index.html";
+    }
+
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+        loadProfilePage();
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
