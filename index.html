@@ -1,532 +1,433 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <meta
-    name="theme-color"
-    content="#0d0d0f"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>NRW Chillspots</title>
-
-  <!-- =========================
-       STYLE
-  ========================== -->
-
-  <link
-    rel="stylesheet"
-    href="./style.css"
-  >
-
-  <!-- =========================
-       LEAFLET CSS
-  ========================== -->
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   >
 
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+<header class="header">
 
-  <header>
+  <div>
+    <h1>📍 NRW Chillspots</h1>
+    <p>Finde und teile geile Spots in NRW</p>
+  </div>
 
-    <h1>
-      📍 NRW Chillspots
-    </h1>
+  <div class="top-buttons">
 
-    <p>
-      finde und teile geile Spots in NRW
-    </p>
-
-    <div class="top-buttons">
-
-      <button
-        id="spotButton"
-        class="primary"
-        type="button"
-      >
-        ➕ Spot
-      </button>
-
-      <button
-        id="accountButton"
-        class="secondary"
-        type="button"
-      >
-        👤 Account
-      </button>
-
-      <button
-        id="adminButton"
-        class="secondary"
-        type="button"
-        style="display:none"
-      >
-        🛡️ Admin
-      </button>
-
-    </div>
-
-    <div
-      id="accountInfo"
-      class="account-info"
+    <button
+      id="spotButton"
+      class="primary"
+      type="button"
     >
-      Nicht eingeloggt
-    </div>
+      ➕ Spot
+    </button>
 
-  </header>
+    <button
+      id="accountButton"
+      class="secondary"
+      type="button"
+    >
+      👤 Account
+    </button>
+
+    <button
+      id="adminButton"
+      class="admin-button"
+      type="button"
+      style="display:none"
+    >
+      🛡️ Admin
+    </button>
+
+  </div>
+
+  <div id="accountInfo" class="account-info">
+    Nicht eingeloggt
+  </div>
+
+</header>
 
 
-  <!-- =========================
-       SUCHE
-  ========================== -->
+<main>
 
-  <div class="panel">
+  <section class="panel">
 
     <input
       id="search"
       class="search"
-      type="text"
+      type="search"
       placeholder="🔎 Stadt oder Spot suchen..."
       autocomplete="off"
     >
 
-  </div>
+  </section>
 
 
-  <!-- =========================
-       KARTE
-  ========================== -->
+  <section class="map-wrapper">
 
-  <div id="map"></div>
+    <div id="map"></div>
+
+  </section>
 
 
-  <!-- =========================
-       SPOT LISTE
-  ========================== -->
+  <section class="panel">
 
-  <main class="panel">
+    <div class="section-title">
 
-    <h2>
-      🔥 Chillspots
-    </h2>
+      <h2>🔥 Chillspots</h2>
 
-    <div id="spotList">
-
-      <div class="empty">
-        Lade Spots...
-      </div>
+      <span id="spotCount">
+        0 Spots
+      </span>
 
     </div>
 
-  </main>
+    <div id="spotList"></div>
+
+  </section>
+
+</main>
 
 
-  <!-- ==================================================
-       SPOT MODAL
-  =================================================== -->
+<!-- =========================
+     SPOT MODAL
+========================= -->
 
-  <div
-    id="spotModal"
-    class="modal"
-  >
+<div
+  id="spotModal"
+  class="modal"
+>
 
-    <div class="modal-box">
+  <div class="modal-box">
 
-      <!-- X -->
+    <div class="modal-header">
+
+      <h2>📍 Neuen Chillspot</h2>
 
       <button
         id="closeSpotBtn"
-        class="close-button"
+        class="close-btn"
         type="button"
-        aria-label="Fenster schließen"
       >
         ✕
       </button>
 
+    </div>
 
-      <h2>
-        📍 Neuen Chillspot
-      </h2>
-
-      <p style="color:#999">
-        Wähle einen Standort auf der Karte oder benutze deinen aktuellen Standort.
-      </p>
+    <p class="hint">
+      Klicke auf der Karte auf den Standort deines Spots.
+    </p>
 
 
-      <!-- NAME -->
+    <label for="spotName">
+      Name
+    </label>
 
-      <label for="spotName">
-        Name
-      </label>
-
-      <input
-        id="spotName"
-        type="text"
-        placeholder="z.B. Baldeneysee"
-        maxlength="80"
-      >
+    <input
+      id="spotName"
+      type="text"
+      placeholder="z.B. Baldeneysee"
+      maxlength="80"
+    >
 
 
-      <!-- BESCHREIBUNG -->
+    <label for="spotDescription">
+      Beschreibung
+    </label>
 
-      <label for="spotDescription">
-        Beschreibung
-      </label>
-
-      <textarea
-        id="spotDescription"
-        placeholder="Was ist an diesem Spot besonders?"
-        maxlength="1000"
-      ></textarea>
+    <textarea
+      id="spotDescription"
+      placeholder="Was ist an diesem Spot besonders?"
+      maxlength="1000"
+    ></textarea>
 
 
-      <!-- KATEGORIE -->
+    <label for="spotCategory">
+      Kategorie
+    </label>
 
-      <label for="spotCategory">
-        Kategorie
-      </label>
+    <select id="spotCategory">
 
-      <select id="spotCategory">
+      <option value="Park">
+        🌳 Park
+      </option>
 
-        <option value="Park">
-          🌳 Park
-        </option>
+      <option value="See">
+        🌊 See
+      </option>
 
-        <option value="See">
-          🌊 See
-        </option>
+      <option value="Sport">
+        ⚽ Sport
+      </option>
 
-        <option value="Sport">
-          ⚽ Sport
-        </option>
+      <option value="Aussicht">
+        🌄 Aussicht
+      </option>
 
-        <option value="Aussicht">
-          🌄 Aussicht
-        </option>
+      <option value="Gaming">
+        🎮 Gaming
+      </option>
 
-        <option value="Gaming">
-          🎮 Gaming
-        </option>
+      <option value="Sonstiges">
+        📍 Sonstiges
+      </option>
 
-        <option value="Sonstiges">
-          📍 Sonstiges
-        </option>
-
-      </select>
+    </select>
 
 
-      <!-- FOTO -->
+    <label for="spotPhoto">
+      Foto
+    </label>
 
-      <label for="spotPhoto">
-        Foto
-      </label>
+    <input
+      id="spotPhoto"
+      type="file"
+      accept="image/*"
+    >
 
-      <input
-        id="spotPhoto"
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-      >
-
-      <p
-        style="color:#888;font-size:13px"
-      >
-        📸 Optionales Foto hinzufügen
-      </p>
-
-
-      <!-- POSITION -->
-
-      <p
-        id="selectedLocation"
-        style="color:#22c55e"
-      >
-        📍 Noch kein Standort ausgewählt
-      </p>
+    <p
+      id="selectedLocation"
+      class="location-text"
+    >
+      📍 Noch kein Standort ausgewählt
+    </p>
 
 
-      <!-- MEIN STANDORT -->
+    <button
+      id="myLocationBtn"
+      class="secondary full"
+      type="button"
+    >
+      📍 Meinen Standort verwenden
+    </button>
+
+
+    <div class="modal-actions">
 
       <button
-        id="myLocationBtn"
-        class="secondary full-button"
+        id="cancelSpotBtn"
+        class="secondary"
         type="button"
       >
-        📍 Meinen Standort verwenden
+        Abbrechen
       </button>
 
+      <button
+        id="publishSpotBtn"
+        class="primary"
+        type="button"
+      >
+        🚀 Veröffentlichen
+      </button>
 
-      <!-- BUTTONS -->
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     ACCOUNT MODAL
+========================= -->
+
+<div
+  id="authModal"
+  class="modal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-header">
+
+      <h2>👤 Account</h2>
+
+      <button
+        id="closeAccountBtn"
+        class="close-btn"
+        type="button"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <div
+      id="loggedOutArea"
+    >
+
+      <label for="email">
+        E-Mail
+      </label>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="deine@email.de"
+        autocomplete="email"
+      >
+
+
+      <label for="password">
+        Passwort
+      </label>
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Mindestens 6 Zeichen"
+        autocomplete="current-password"
+      >
+
 
       <div class="modal-actions">
 
         <button
-          id="cancelSpotBtn"
-          class="secondary"
-          type="button"
-        >
-          Abbrechen
-        </button>
-
-        <button
-          id="publishSpotBtn"
+          id="registerBtn"
           class="primary"
           type="button"
         >
-          🚀 Veröffentlichen
+          📝 Registrieren
+        </button>
+
+        <button
+          id="loginBtn"
+          class="secondary"
+          type="button"
+        >
+          🔑 Einloggen
         </button>
 
       </div>
 
     </div>
 
-  </div>
+
+    <div
+      id="loggedInArea"
+      style="display:none"
+    >
+
+      <div class="profile-card">
+
+        <div class="profile-icon">
+          👤
+        </div>
+
+        <div>
+
+          <strong>
+            Eingeloggt
+          </strong>
+
+          <p
+            id="loggedInEmail"
+            class="muted"
+          ></p>
+
+        </div>
+
+      </div>
 
 
-  <!-- ==================================================
-       ACCOUNT MODAL
-  =================================================== -->
+      <label for="nicknameInput">
+        Dein Nickname
+      </label>
 
-  <div
-    id="authModal"
-    class="modal"
-  >
-
-    <div class="modal-box">
-
-      <!-- X -->
+      <input
+        id="nicknameInput"
+        type="text"
+        maxlength="24"
+        placeholder="z.B. Oskar"
+      >
 
       <button
-        id="closeAccountBtn"
-        class="close-button"
+        id="saveNicknameBtn"
+        class="primary full"
         type="button"
-        aria-label="Account schließen"
       >
-        ✕
+        💾 Nickname speichern
       </button>
 
 
-      <h2>
-        👤 Account
-      </h2>
-
-
-      <!-- =========================
-           AUSGELOGGT
-      ========================== -->
-
-      <div id="loggedOutArea">
-
-        <label for="email">
-          E-Mail
-        </label>
-
-        <input
-          id="email"
-          type="email"
-          placeholder="deine@email.de"
-          autocomplete="email"
-        >
-
-
-        <label for="password">
-          Passwort
-        </label>
-
-        <input
-          id="password"
-          type="password"
-          placeholder="Mindestens 6 Zeichen"
-          autocomplete="current-password"
-        >
-
-
-        <div class="modal-actions">
-
-          <button
-            id="registerBtn"
-            class="primary"
-            type="button"
-          >
-            ✨ Registrieren
-          </button>
-
-          <button
-            id="loginBtn"
-            class="secondary"
-            type="button"
-          >
-            🔑 Einloggen
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           EINGELOGGT
-      ========================== -->
-
-      <div
-        id="loggedInArea"
-        style="display:none"
+      <button
+        id="logoutBtn"
+        class="logout-btn full"
+        type="button"
       >
-
-        <p
-          id="loggedInEmail"
-          style="color:#aaa"
-        ></p>
-
-
-        <!-- NICKNAME -->
-
-        <div id="nicknameArea">
-
-          <label for="nicknameInput">
-            Dein Nickname
-          </label>
-
-          <input
-            id="nicknameInput"
-            type="text"
-            maxlength="24"
-            placeholder="z.B. Oskar123"
-            autocomplete="off"
-          >
-
-          <small
-            style="
-              display:block;
-              color:#777;
-              margin-top:6px;
-            "
-          >
-            Dieser Name wird anderen bei deinen Spots angezeigt.
-          </small>
-
-          <button
-            id="saveNicknameBtn"
-            class="primary full-button"
-            type="button"
-          >
-            💾 Nickname speichern
-          </button>
-
-        </div>
-
-
-        <!-- LOGOUT -->
-
-        <button
-          id="logoutBtn"
-          class="secondary full-button"
-          type="button"
-        >
-          🚪 Ausloggen
-        </button>
-
-      </div>
+        👋 Ausloggen
+      </button>
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- ==================================================
-       ADMIN MODAL
-  =================================================== -->
 
-  <div
-    id="adminModal"
-    class="modal"
-  >
+<!-- =========================
+     ADMIN MODAL
+========================= -->
 
-    <div class="modal-box">
+<div
+  id="adminModal"
+  class="modal"
+>
 
-      <!-- X -->
+  <div class="modal-box admin-box">
+
+    <div class="modal-header">
+
+      <h2>🛡️ Admin Dashboard</h2>
 
       <button
         id="closeAdminBtn"
-        class="close-button"
+        class="close-btn"
         type="button"
-        aria-label="Admin schließen"
       >
         ✕
       </button>
 
-
-      <h2>
-        🛡️ Admin Panel
-      </h2>
-
-      <p style="color:#999">
-        Verwaltung von Nutzern und Spots
-      </p>
-
-
-      <div id="adminContent">
-
-        <p style="color:#777">
-          Lade Admin-Daten...
-        </p>
-
-      </div>
-
     </div>
+
+    <p class="hint">
+      Hier kannst du von dir oder anderen erstellte Spots verwalten.
+    </p>
+
+    <div id="adminContent"></div>
 
   </div>
 
-
-  <!-- =========================
-       STATUS
-  ========================== -->
-
-  <div
-    id="status"
-    class="status"
-  ></div>
+</div>
 
 
-  <!-- ==================================================
-       JAVASCRIPT BIBLIOTHEKEN
-  =================================================== -->
-
-  <!-- Leaflet -->
-
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  ></script>
+<div
+  id="status"
+  class="status"
+></div>
 
 
-  <!-- Supabase -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
 
-
-  <!-- ==================================================
-       DEIN JAVASCRIPT
-  =================================================== -->
-
-  <script src="./app.js"></script>
-
+<script src="./app.js"></script>
 
 </body>
-
 </html>
