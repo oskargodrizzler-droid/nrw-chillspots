@@ -1,198 +1,96 @@
-// ======================================================
-// NRW CHILLSPOTS - SPOTS.JS
-// Spots erstellen, laden, Fotos und löschen
-// ======================================================
+// ===============================
+// SPOTS
+// ===============================
 
 let spots = [];
 
 
-// ======================================================
-// ALLE SPOTS LADEN
-// ======================================================
-
-async function loadSpots() {
-
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from("spots")
-    .select(`
-      *,
-      profiles (
-        nickname
-      )
-    `)
-    .order("created_at", {
-      ascending: false
-    });
-
-  if (error) {
-    console.error("Spots laden:", error);
-    showStatus("❌ Spots konnten nicht geladen werden");
-    return;
-  }
-
-  spots = data || [];
-
-  console.log("Spots geladen:", spots);
-
-  // Karte aktualisieren
-  if (typeof renderMarkers === "function") {
-    renderMarkers();
-  }
-
-  // Liste aktualisieren
-  await renderSpots();
-}
-
-
-// ======================================================
+// ===============================
 // SPOT ERSTELLEN
-// ======================================================
+// ===============================
 
 async function createSpot() {
 
-  const user =
-    await Auth.getUser();
-
-  if (!user) {
-    showStatus(
-      "❌ Du musst zuerst eingeloggt sein"
-    );
-    return;
-  }
-
-
-  const name =
-    document
-      .getElementById("spotName")
-      ?.value
-      .trim();
-
-
-  const description =
-    document
-      .getElementById("spotDescription")
-      ?.value
-      .trim();
-
-
-  const category =
-    document
-      .getElementById("spotCategory")
-      ?.value;
-
-
-  const photoInput =
-    document.getElementById("spotPhoto");
-
-
-  const photoFile =
-    photoInput?.files?.[0];
-
-
-  // Standort
-  if (
-    typeof selectedLat === "undefined" ||
-    typeof selectedLng === "undefined" ||
-    selectedLat === null ||
-    selectedLng === null
-  ) {
-
-    showStatus(
-      "❌ Wähle zuerst einen Standort auf der Karte"
-    );
-
-    return;
-  }
-
-
-  if (!name) {
-
-    showStatus(
-      "❌ Gib deinem Spot einen Namen"
-    );
-
-    return;
-  }
-
-
-  showStatus(
-    "⏳ Spot wird erstellt..."
-  );
-
-
-  // ====================================================
-  // SPOT IN DATENBANK ERSTELLEN
-  // ====================================================
-
-  const {
-    data: newSpot,
-    error
-  } =
-    await supabaseClient
-      .from("spots")
-      .insert({
-
-        name: name,
-
-        description:
-          description || null,
-
-        category:
-          category || "Sonstiges",
-
-        latitude:
-          selectedLat,
-
-        longitude:
-          selectedLng,
-
-        user_id:
-          user.id
-
-      })
-      .select()
-      .single();
-
-
-  if (error) {
-
-    console.error(
-      "Spot erstellen:",
-      error
-    );
-
-    showStatus(
-      "❌ " + error.message
-    );
-
-    return;
-  }
-
-
-  // ====================================================
-  // FOTO HOCHLADEN
-  // ====================================================
-
-  if (photoFile) {
-
-    const extension =
-      photoFile.name
-        .split(".")
-        .pop()
-        .toLowerCase();
-
-
-    const fileName =
-      `${user.id}/${crypto.randomUUID()}.${extension}`;
-
+  try {
 
     const {
-      error: uploadError
-    } =
-      await supabaseClient
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError) {
+      console.error(userError);
+      showStatus("❌ Account konnte nicht geprüft werden");
+      return;
+    }
+
+    if (!user) {
+      showStatus("❌ Bitte zuerst einloggen");
+      openAuthModal();
+      return;
+    }
+
+
+    const name =
+      document.getElementById("spotName").value.trim();
+
+    const description =
+      document.getElementById("spotDescription").value.trim();
+
+    const category =
+      document.getElementById("spotCategory").value;
+
+    const photoInput =
+      document.getElementById("spotPhoto");
+
+    const photoFile =
+      photoInput?.files?.[0] || null;
+
+
+    if (!name) {
+      showStatus("❌ Gib einen Namen ein");
+      return;
+    }
+
+    if (
+      typeof selectedLat === "undefined" ||
+      typeof selectedLng === "undefined" ||
+      selectedLat === null ||
+      selectedLng === null
+    ) {
+      showStatus("❌ Wähle zuerst einen Standort auf der Karte");
+      return;
+    }
+
+
+    showStatus("⏳ Spot wird erstellt...");
+
+
+    let photoUrl = null;
+
+
+    // ===============================
+    // FOTO
+    // ===============================
+
+    if (photoFile) {
+
+      if (photoFile.size > 10 * 1024 * 1024) {
+        showStatus("❌ Foto darf maximal 10 MB groß sein");
+        return;
+      }
+
+
+      const extension =
+        photoFile.name.split(".").pop().toLowerCase();
+
+      const fileName =
+        `${user.id}/${crypto.randomUUID()}.${extension}`;
+
+
+      const {
+        error: uploadError
+      } = await supabaseClient
         .storage
         .from("spot-photos")
         .upload(
@@ -205,332 +103,265 @@ async function createSpot() {
         );
 
 
-    if (uploadError) {
+      if (uploadError) {
 
-      console.error(
-        "Foto Upload:",
-        uploadError
-      );
+        console.error(
+          "Foto Upload Fehler:",
+          uploadError
+        );
 
-      showStatus(
-        "⚠️ Spot erstellt, aber Foto konnte nicht hochgeladen werden"
-      );
+        showStatus(
+          "❌ Foto konnte nicht hochgeladen werden"
+        );
 
-    } else {
+        return;
+      }
+
 
       const {
         data: publicData
-      } =
-        supabaseClient
-          .storage
-          .from("spot-photos")
-          .getPublicUrl(
-            fileName
-          );
+      } = supabaseClient
+        .storage
+        .from("spot-photos")
+        .getPublicUrl(fileName);
 
 
-      const imageUrl =
-        publicData.publicUrl;
+      photoUrl =
+        publicData?.publicUrl || null;
+    }
 
 
-      // Foto mit Spot verbinden
+    // ===============================
+    // SPOT
+    // ===============================
+
+    const spotData = {
+
+      name: name,
+
+      description:
+        description || null,
+
+      category:
+        category || "Sonstiges",
+
+      latitude:
+        Number(selectedLat),
+
+      longitude:
+        Number(selectedLng),
+
+      user_id:
+        user.id
+
+    };
+
+
+    // Nur photo_url mitsenden,
+    // wenn die Spalte existiert und wir sie benutzen wollen.
+    //
+    // Der eigentliche Spot wird zuerst erstellt.
+
+    const {
+      data: newSpot,
+      error: spotError
+    } = await supabaseClient
+      .from("spots")
+      .insert(spotData)
+      .select("*")
+      .single();
+
+
+    if (spotError) {
+
+      console.error(
+        "SPOT DATABASE ERROR:",
+        spotError
+      );
+
+      showStatus(
+        "❌ Spot: " +
+        (spotError.message || "Unbekannter Fehler")
+      );
+
+      return;
+    }
+
+
+    // ===============================
+    // FOTO MIT SPOT VERKNÜPFEN
+    // ===============================
+
+    if (photoUrl && newSpot) {
+
       const {
         error: photoError
-      } =
-        await supabaseClient
-          .from("spot_photos")
-          .insert({
+      } = await supabaseClient
+        .from("spot_photos")
+        .insert({
 
-            spot_id:
-              newSpot.id,
+          spot_id:
+            newSpot.id,
 
-            image_url:
-              imageUrl,
+          image_url:
+            photoUrl,
 
-            user_id:
-              user.id
+          user_id:
+            user.id
 
-          });
+        });
 
 
       if (photoError) {
 
         console.error(
-          "Foto DB:",
+          "PHOTO DATABASE ERROR:",
           photoError
         );
 
+        // Spot bleibt trotzdem erhalten.
+        showStatus(
+          "⚠️ Spot erstellt, Foto konnte nicht gespeichert werden"
+        );
+
       }
-
     }
-  }
 
 
-  // ====================================================
-  // FORMULAR ZURÜCKSETZEN
-  // ====================================================
+    // ===============================
+    // FORMULAR ZURÜCKSETZEN
+    // ===============================
 
-  const nameInput =
-    document.getElementById("spotName");
+    document.getElementById("spotName").value = "";
 
-  const descriptionInput =
-    document.getElementById("spotDescription");
+    document.getElementById(
+      "spotDescription"
+    ).value = "";
 
-  const photoInputElement =
-    document.getElementById("spotPhoto");
-
-
-  if (nameInput) {
-    nameInput.value = "";
-  }
-
-  if (descriptionInput) {
-    descriptionInput.value = "";
-  }
-
-  if (photoInputElement) {
-    photoInputElement.value = "";
-  }
+    document.getElementById(
+      "spotPhoto"
+    ).value = "";
 
 
-  // Standort zurücksetzen
-  selectedLat = null;
-  selectedLng = null;
+    closeSpotModal();
+
+    clearSelectedLocation?.();
 
 
-  if (
-    typeof selectedMarker !== "undefined" &&
-    selectedMarker
-  ) {
-
-    map.removeLayer(
-      selectedMarker
+    showStatus(
+      "✅ Spot veröffentlicht!"
     );
 
-    selectedMarker = null;
+
+    await loadSpots();
+
+  } catch (error) {
+
+    console.error(
+      "CREATE SPOT CRASH:",
+      error
+    );
+
+    showStatus(
+      "❌ Fehler beim Erstellen"
+    );
   }
-
-
-  // Modal schließen
-  const modal =
-    document.getElementById("spotModal");
-
-  if (modal) {
-    modal.classList.remove("show");
-  }
-
-
-  showStatus(
-    "✅ Spot veröffentlicht!"
-  );
-
-
-  // Neu laden
-  await loadSpots();
 }
 
 
-// ======================================================
-// SPOT LÖSCHEN
-// ======================================================
 
-async function deleteSpot(spotId) {
+// ===============================
+// SPOTS LADEN
+// ===============================
 
-  const user =
-    await Auth.getUser();
+async function loadSpots() {
 
-  if (!user) {
-
-    showStatus(
-      "❌ Du musst eingeloggt sein"
-    );
-
-    return;
-  }
-
-
-  if (!spotId) {
-    return;
-  }
-
-
-  // Spot suchen
-  const spot =
-    spots.find(
-      s => String(s.id) === String(spotId)
-    );
-
-
-  if (!spot) {
-
-    showStatus(
-      "❌ Spot nicht gefunden"
-    );
-
-    return;
-  }
-
-
-  // Prüfen ob eigener Spot
-  const isOwner =
-    String(spot.user_id) ===
-    String(user.id);
-
-
-  // Admin prüfen
-  let isAdmin = false;
+  console.log("📍 Lade Spots...");
 
 
   try {
 
     const {
-      data: profile
-    } =
-      await supabaseClient
-        .from("profiles")
-        .select("is_admin")
-        .eq(
-          "id",
-          user.id
-        )
-        .maybeSingle();
+      data,
+      error
+    } = await supabaseClient
+      .from("spots")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
 
-    isAdmin =
-      profile?.is_admin === true;
+    if (error) {
+
+      console.error(
+        "SUPABASE SPOTS ERROR:",
+        error
+      );
+
+      showStatus(
+        "❌ Spots: " +
+        error.message
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "✅ Spots geladen:",
+      data
+    );
+
+
+    spots =
+      Array.isArray(data)
+        ? data
+        : [];
+
+
+    renderSpots();
+
+
+    if (
+      typeof renderMarkers === "function"
+    ) {
+      renderMarkers();
+    }
+
 
   } catch (error) {
 
     console.error(
-      "Admin-Prüfung:",
-      error
-    );
-
-  }
-
-
-  if (!isOwner && !isAdmin) {
-
-    showStatus(
-      "❌ Du darfst diesen Spot nicht löschen"
-    );
-
-    return;
-  }
-
-
-  const confirmed =
-    confirm(
-      "Diesen Spot wirklich löschen?"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  showStatus(
-    "⏳ Spot wird gelöscht..."
-  );
-
-
-  // Fotos aus DB löschen
-  const {
-    error: photosError
-  } =
-    await supabaseClient
-      .from("spot_photos")
-      .delete()
-      .eq(
-        "spot_id",
-        spotId
-      );
-
-
-  if (photosError) {
-
-    console.error(
-      "Fotos löschen:",
-      photosError
-    );
-
-  }
-
-
-  // Likes löschen
-  const {
-    error: likesError
-  } =
-    await supabaseClient
-      .from("likes")
-      .delete()
-      .eq(
-        "spot_id",
-        spotId
-      );
-
-
-  if (likesError) {
-
-    console.error(
-      "Likes löschen:",
-      likesError
-    );
-
-  }
-
-
-  // Spot löschen
-  const {
-    error
-  } =
-    await supabaseClient
-      .from("spots")
-      .delete()
-      .eq(
-        "id",
-        spotId
-      );
-
-
-  if (error) {
-
-    console.error(
-      "Spot löschen:",
+      "LOAD SPOTS CRASH:",
       error
     );
 
     showStatus(
-      "❌ " + error.message
+      "❌ Fehler beim Laden der Spots"
     );
-
-    return;
   }
-
-
-  showStatus(
-    "🗑️ Spot gelöscht"
-  );
-
-
-  await loadSpots();
 }
 
 
-// ======================================================
-// SPOT LISTE RENDERN
-// ======================================================
+
+// ===============================
+// SPOTS ANZEIGEN
+// ===============================
 
 async function renderSpots() {
 
   const container =
-    document.getElementById(
-      "spotList"
-    );
+    document.getElementById("spotList");
 
 
   if (!container) {
+    console.error(
+      "spotList nicht gefunden"
+    );
     return;
   }
 
@@ -548,50 +379,117 @@ async function renderSpots() {
   }
 
 
-  container.innerHTML = "";
+  container.innerHTML = `
+    <div class="empty">
+      ⏳ Spots werden geladen...
+    </div>
+  `;
 
 
-  const user =
-    await Auth.getUser();
+  // ===============================
+  // PROFILE LADEN
+  // ===============================
+
+  const userIds =
+    spots
+      .map(spot => spot.user_id)
+      .filter(Boolean);
 
 
-  // Admin prüfen
-  let isAdmin = false;
+  let profiles = [];
 
 
-  if (user) {
+  if (userIds.length) {
 
     const {
-      data: profile
-    } =
-      await supabaseClient
-        .from("profiles")
-        .select("is_admin")
-        .eq(
-          "id",
-          user.id
-        )
-        .maybeSingle();
+      data,
+      error
+    } = await supabaseClient
+      .from("profiles")
+      .select(
+        "id,nickname,username"
+      )
+      .in(
+        "id",
+        userIds
+      );
 
 
-    isAdmin =
-      profile?.is_admin === true;
+    if (error) {
+
+      console.warn(
+        "Profile konnten nicht geladen werden:",
+        error
+      );
+
+    } else {
+
+      profiles =
+        data || [];
+
+    }
   }
 
 
+  const profileMap =
+    new Map(
+      profiles.map(
+        profile => [
+          profile.id,
+          profile
+        ]
+      )
+    );
+
+
+  // ===============================
+  // USER
+  // ===============================
+
+  const {
+    data: {
+      user
+    }
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  container.innerHTML = "";
+
+
+  // ===============================
+  // SPOTS
+  // ===============================
+
   for (const spot of spots) {
 
-    // ==================================================
+    const profile =
+      profileMap.get(
+        spot.user_id
+      );
+
+
+    const nickname =
+      profile?.nickname ||
+      profile?.username ||
+      "Unbekannt";
+
+
+    // ===============================
     // FOTO
-    // ==================================================
+    // ===============================
 
-    let imageUrl = null;
+    let imageUrl =
+      spot.photo_url ||
+      null;
 
 
-    const {
-      data: photos
-    } =
-      await supabaseClient
+    if (!imageUrl) {
+
+      const {
+        data: photos,
+        error
+      } = await supabaseClient
         .from("spot_photos")
         .select(
           "image_url"
@@ -603,32 +501,22 @@ async function renderSpots() {
         .limit(1);
 
 
-    if (
-      photos &&
-      photos.length > 0
-    ) {
+      if (!error && photos?.length) {
 
-      imageUrl =
-        photos[0].image_url;
+        imageUrl =
+          photos[0].image_url;
+
+      }
     }
 
 
-    // ==================================================
-    // NICKNAME
-    // ==================================================
-
-    const nickname =
-      spot.profiles?.nickname ||
-      "Unbekannt";
-
-
-    // ==================================================
+    // ===============================
     // HTML
-    // ==================================================
+    // ===============================
 
     const div =
       document.createElement(
-        "div"
+        "article"
       );
 
 
@@ -638,12 +526,7 @@ async function renderSpots() {
 
     const canDelete =
       user &&
-      (
-        String(spot.user_id) ===
-        String(user.id)
-        ||
-        isAdmin
-      );
+      user.id === spot.user_id;
 
 
     div.innerHTML = `
@@ -660,11 +543,15 @@ async function renderSpots() {
           : ""
       }
 
+
       <div class="spot-content">
 
         <h3>
-          📍 ${escapeHtml(spot.name)}
+          📍 ${escapeHtml(
+            spot.name
+          )}
         </h3>
+
 
         <span class="category">
           ${escapeHtml(
@@ -673,6 +560,7 @@ async function renderSpots() {
           )}
         </span>
 
+
         <p>
           ${escapeHtml(
             spot.description ||
@@ -680,38 +568,49 @@ async function renderSpots() {
           )}
         </p>
 
-        <p class="spot-author">
-          👤 erstellt von
+
+        <div class="creator">
+          erstellt von
           <strong>
-            @${escapeHtml(nickname)}
+            @${escapeHtml(
+              nickname
+            )}
           </strong>
-        </p>
-
-        <div class="spot-actions">
-
-          <button
-            class="like-btn"
-            onclick="likeSpot('${spot.id}', this)"
-          >
-            ❤️ Like
-          </button>
-
-          ${
-            canDelete
-              ? `
-                <button
-                  class="delete-btn"
-                  onclick="deleteSpot('${spot.id}')"
-                >
-                  🗑️ Löschen
-                </button>
-              `
-              : ""
-          }
-
         </div>
 
+
+        <button
+          class="like-btn"
+          onclick="likeSpot(
+            '${escapeHtml(
+              String(spot.id)
+            )}',
+            this
+          )"
+        >
+          ❤️ Like
+        </button>
+
+
+        ${
+          canDelete
+            ? `
+              <button
+                class="delete-btn"
+                onclick="deleteSpot(
+                  '${escapeHtml(
+                    String(spot.id)
+                  )}'
+                )"
+              >
+                🗑️ Löschen
+              </button>
+            `
+            : ""
+        }
+
       </div>
+
     `;
 
 
@@ -719,76 +618,79 @@ async function renderSpots() {
       div
     );
   }
-
-
-  // Suche anwenden
-  if (
-    typeof filterSpots ===
-    "function"
-  ) {
-
-    filterSpots();
-  }
 }
 
 
-// ======================================================
-// HTML SICHER MACHEN
-// ======================================================
 
-function escapeHtml(value) {
+// ===============================
+// SPOT LÖSCHEN
+// ===============================
 
-  if (
-    value === null ||
-    value === undefined
-  ) {
+async function deleteSpot(
+  spotId
+) {
 
-    return "";
+  const {
+    data: {
+      user
+    }
+  } =
+    await supabaseClient.auth.getUser();
+
+
+  if (!user) {
+
+    showStatus(
+      "❌ Bitte einloggen"
+    );
+
+    return;
   }
 
 
-  return String(value)
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-    .replaceAll(
-      "'",
-      "&#039;"
+  const confirmed =
+    confirm(
+      "Diesen Spot wirklich löschen?"
     );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("spots")
+      .delete()
+      .eq(
+        "id",
+        spotId
+      );
+
+
+  if (error) {
+
+    console.error(
+      "DELETE ERROR:",
+      error
+    );
+
+    showStatus(
+      "❌ " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  showStatus(
+    "🗑️ Spot gelöscht"
+  );
+
+
+  await loadSpots();
 }
-
-
-// ======================================================
-// START
-// ======================================================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  async function() {
-
-    // Kleine Verzögerung,
-    // damit Auth geladen ist
-    setTimeout(
-      async function() {
-
-        await loadSpots();
-
-      },
-      100
-    );
-
-  }
-);
